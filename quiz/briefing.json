@@ -1,0 +1,161 @@
+{
+  "asOf": "2026-10-18",
+  "items": [
+    {
+      "c": "news",
+      "id": "n1",
+      "o": [
+        "Spain",
+        "Argentina",
+        "France",
+        "Brazil"
+      ],
+      "q": "Which country won the 2026 FIFA World Cup?",
+      "s": "ABC News (Good Morning America)",
+      "w": "Spain beat defending champion Argentina 1-0 after extra time in the final on 19 July 2026 at MetLife Stadium in New Jersey. It was Spain's second World Cup title and its first since 2010."
+    },
+    {
+      "c": "news",
+      "id": "n2",
+      "o": [
+        "Ferran Torres",
+        "Lamine Yamal",
+        "Julián Álvarez",
+        "Mikel Oyarzabal"
+      ],
+      "q": "Who scored the only goal of the 2026 World Cup final?",
+      "s": "ABC News (Good Morning America)",
+      "w": "Torres scored in the 105th minute of extra time. Spain conceded only one goal in the whole tournament."
+    },
+    {
+      "c": "news",
+      "id": "n3",
+      "o": [
+        "48",
+        "32",
+        "40",
+        "64"
+      ],
+      "q": "How many national teams played in the 2026 World Cup, the first hosted by three countries?",
+      "s": "ABC News (Good Morning America)",
+      "w": "The United States, Mexico and Canada co-hosted the tournament, which grew from 32 teams to 48."
+    },
+    {
+      "c": "news",
+      "id": "n4",
+      "o": [
+        "High-energy neutrinos from space",
+        "Gravitational waves",
+        "Dark-matter particles",
+        "Solar flares"
+      ],
+      "q": "Francis Halzen won the 2026 Nobel Prize in Physics for work on the IceCube observatory. What does IceCube detect?",
+      "s": "NobelPrize.org and news reports, 6 Oct 2026",
+      "w": "IceCube instruments a cubic kilometre of Antarctic ice at the South Pole to catch rare neutrinos from distant cosmic sources."
+    },
+    {
+      "c": "news",
+      "id": "n5",
+      "o": [
+        "Navanethem Pillay",
+        "Narges Mohammadi",
+        "Maria Ressa",
+        "Yulia Navalnaya"
+      ],
+      "q": "Who won the 2026 Nobel Peace Prize?",
+      "s": "News reports of the October 2026 announcement",
+      "w": "Pillay is a South African jurist and a former UN High Commissioner for Human Rights. She was honored for promoting peace and international law."
+    },
+    {
+      "c": "politics",
+      "id": "p1",
+      "o": [
+        "Andy Burnham",
+        "Wes Streeting",
+        "Angela Rayner",
+        "Ed Miliband"
+      ],
+      "q": "Who became UK prime minister in July 2026 after Keir Starmer resigned?",
+      "s": "NPR, 19 Jul 2026; gov.uk, 20 Jul 2026",
+      "w": "Burnham, who previously served as Mayor of Greater Manchester, took office around 19 July 2026."
+    },
+    {
+      "c": "politics",
+      "id": "p2",
+      "o": [
+        "Friedrich Merz",
+        "Olaf Scholz",
+        "Robert Habeck",
+        "Armin Laschet"
+      ],
+      "q": "Who is Germany's chancellor as of October 2026?",
+      "s": "gov.uk readout of the UK prime minister's call with Chancellor Merz, 20 Jul 2026",
+      "w": "Merz, of the CDU, has led Germany since May 2025. On 20 July 2026 he spoke with the new UK prime minister about the Kensington Treaty and Ukraine."
+    },
+    {
+      "c": "politics",
+      "id": "p3",
+      "o": [
+        "3 November 2026",
+        "10 November 2026",
+        "27 October 2026",
+        "7 November 2026"
+      ],
+      "q": "On what date are the 2026 US midterm elections?",
+      "s": "US federal election calendar",
+      "w": "Election Day falls on the Tuesday after the first Monday in November. All 435 House seats and about a third of the Senate are on the ballot."
+    },
+    {
+      "c": "stocks",
+      "id": "s1",
+      "o": [
+        "Kevin Warsh",
+        "Jerome Powell",
+        "Christopher Waller",
+        "Janet Yellen"
+      ],
+      "q": "Who chairs the US Federal Reserve as of October 2026?",
+      "s": "Seeking Alpha, Fox Business and Yahoo Finance",
+      "w": "Kevin Warsh was sworn in as chair in 2026. The Fed's rate-setting committee next meets on 27 and 28 October."
+    },
+    {
+      "c": "stocks",
+      "id": "s2",
+      "o": [
+        "Raised the target range by a quarter point, to 3.75%-4%",
+        "Held rates steady",
+        "Cut the target range by a quarter point",
+        "Raised rates by half a point"
+      ],
+      "q": "What did the Federal Reserve do with interest rates on 16 September 2026?",
+      "s": "Federal Reserve statement, 16 Sep 2026; Yahoo Finance",
+      "w": "The vote was 12 to 0, and it was the Fed's first rate hike in three years. The statement said inflation remains elevated."
+    },
+    {
+      "c": "stocks",
+      "id": "s3",
+      "o": [
+        "About 7,660",
+        "About 5,900",
+        "About 9,100",
+        "About 6,300"
+      ],
+      "q": "About where did the S&P 500 close on Friday, 16 October 2026?",
+      "s": "Associated Press market summary, 16 Oct 2026",
+      "w": "It fell 1.1% to 7,659.44, and both the S&P 500 and the Nasdaq had their worst week since June. The index was still up about 11.9% for the year."
+    },
+    {
+      "c": "stocks",
+      "id": "s4",
+      "o": [
+        "Nvidia",
+        "Apple",
+        "Alphabet",
+        "Microsoft"
+      ],
+      "q": "Which company had the largest market value among large US-listed companies in mid-October 2026?",
+      "s": "americancompanies.com, data as of 17 Oct 2026",
+      "w": "Nvidia was first at about $5.0 trillion, ahead of Apple at $4.9 trillion and Alphabet at $3.9 trillion. Rankings at the top can swap within days."
+    }
+  ]
+}

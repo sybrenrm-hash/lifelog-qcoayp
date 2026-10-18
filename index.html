@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Life Log</title>
+<meta name="description" content="Log mood, study time and habits in a minute a day, with tips and a daily quiz.">
+<meta name="theme-color" content="#141414">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Life Log">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500..700&family=Nunito:wght@400..700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* App shell: the Claude page's wrapper gave these; standalone mode needs them here */
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+[hidden]:not([hidden=until-found i]){display:none!important}
+</style>
+</head>
+<body>
+<style>
+/* Night theme: one dark-brown palette with dark-orange section accents, no light mode. Layout: three summary tiles on top; charts and history in the wide column, log form and tips in the side column (stacked on phones) */
+:root{
+  color-scheme:dark;
+  --bg:#141414; --surface:#1C1C1C; --surface-2:#262626;
+  --ink:#ECE9E4; --ink-2:#B9B4AD; --ink-3:#9A958E;
+  --line:#2E2E2E; --line-strong:#4A4A4A; --grid:#262626;
+  --sec-line:#7A3F18; --sec-ink:#E8914F;
+  --c-mood:#CC7240; --c-study:#4F8FD0; --c-habit:#7BA05A;
+  --on-mood:#141414; --on-habit:#141414;
+  --good:#A9D08A; --good-bg:#1B2616; --watch:#F2A878; --watch-bg:#35211A; --try-bg:#262626;
+  --btn:#A94E17; --btn-ink:#FFF1E2; --focus:#F2BC86;
+  --font-display:'Quicksand','Nunito','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --font-body:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'DM Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 var(--font-body);-webkit-text-size-adjust:100%}
+.wrap{max-width:480px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,p{margin:0}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.top h1{font:600 30px/1.1 var(--font-display);letter-spacing:-.01em}
+.top .sub{margin-top:6px;color:var(--ink-2);font-size:14px}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:8px 14px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--ink-2);min-height:36px}
+.seg button+button{border-left:1px solid var(--line-strong)}
+.seg button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
+
+.banner{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;justify-content:space-between;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px}
+.banner p{min-width:0;flex:1 1 240px}
+
+.tiles{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr));margin:16px 0}
+.tiles-cap{grid-column:1/-1;margin:0;font-size:12px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.tile svg{max-width:100%;height:auto}
+.range-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.range-h{font:600 17px/1.2 var(--font-display);color:var(--sec-ink)}
+.fold.wk{border-top:0;margin-top:0}
+.fold.wk>summary{padding:0;font-size:17px;color:var(--sec-ink)}
+.wk .qstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;margin:16px 0 12px}
+.wk .qstat b{font-size:24px}
+.wk .qstat small{display:block;margin-top:4px;font-size:12px;color:var(--ink-2)}
+.wk-lines{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.wk-lines li{padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.wk-lines b{color:var(--ink);font-weight:600}
+.tile{background:var(--surface);border:1px solid var(--sec-line);border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile-label{display:flex;align-items:center;gap:8px;font-weight:500;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.tile-main{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.big{font:600 28px/1 var(--font-display);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.big small{font:500 13px var(--font-body);color:var(--ink-2);margin-left:4px;letter-spacing:0}
+.tile-sub{font-size:12px;line-height:1.35;color:var(--ink-2)}
+.pips{display:flex;gap:3px;padding-bottom:4px}
+.pip{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line-strong)}
+.pip.met{background:var(--c-study);border-color:var(--c-study)}
+.pip.some{border-color:var(--c-study)}
+.meter{height:6px;width:100%;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.meter i{display:block;height:100%;background:var(--c-habit)}
+
+.layout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.main,.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+
+.card{background:var(--surface);border:1px solid var(--sec-line);border-radius:12px;padding:18px;min-width:0}
+.card h2{font:600 17px/1.2 var(--font-display);color:var(--sec-ink)}
+.hint{margin:4px 0 14px;color:var(--ink-2);font-size:13px}
+
+.field{margin:0 0 14px;padding:0;border:0;min-width:0}
+.field label,.field legend{display:block;font-weight:600;font-size:13px;margin-bottom:6px;padding:0}
+.opt{font-weight:400;color:var(--ink-3)}
+input[type=date],input[type=number],input[type=text],textarea{width:100%;background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:10px 12px;font-size:16px;min-height:44px}
+textarea{resize:vertical;min-height:64px}
+.moods{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.moods input{position:absolute;opacity:0;width:1px;height:1px}
+.moods label{display:flex;flex-direction:column;align-items:center;gap:3px;margin:0;padding:8px 0;min-height:58px;justify-content:center;border:1px solid var(--line-strong);border-radius:8px;cursor:pointer;background:var(--surface)}
+.moods .n{font:600 20px/1 var(--font-display)}
+.moods .w{font-size:11px;font-weight:500;color:var(--ink-2)}
+.moods input:checked+label{background:var(--c-mood);border-color:var(--c-mood);color:var(--on-mood)}
+.moods input:checked+label .w{color:inherit}
+.moods input:focus-visible+label{outline:2px solid var(--focus);outline-offset:2px}
+.stepper{display:flex;gap:6px}
+.stepper input{text-align:center;min-width:0}
+.stepper button{flex:none;width:44px;border:1px solid var(--line-strong);background:var(--surface);border-radius:8px;font-size:20px;cursor:pointer}
+.field label.chk{position:relative;display:flex;align-items:center;gap:10px;min-height:40px;margin:0!important;font-weight:400!important;font-size:15px!important;cursor:pointer}
+.chk input{position:absolute;opacity:0;width:1px;height:1px}
+.box{width:20px;height:20px;flex:none;border:1.5px solid var(--line-strong);border-radius:5px;background:var(--surface);display:grid;place-items:center}
+.chk input:checked+.box{background:var(--c-habit);border-color:var(--c-habit)}
+.chk input:checked+.box::after{content:"";width:9px;height:5px;border-left:2px solid var(--on-habit);border-bottom:2px solid var(--on-habit);transform:rotate(-45deg) translate(1px,-1px)}
+.chk input:focus-visible+.box{outline:2px solid var(--focus);outline-offset:2px}
+.link{background:none;border:0;padding:6px 0;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:13.5px;font-weight:500}
+.link.danger{color:var(--watch)}
+.editor{margin:0 0 14px;padding:12px;background:var(--surface-2);border-radius:10px;display:flex;flex-direction:column;gap:12px}
+.editor ul{list-style:none;margin:0;padding:0}
+.editor li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;font-size:14px}
+.editor .add{display:flex;gap:6px}
+.btn{border:1px solid var(--btn);background:var(--btn);color:var(--btn-ink);border-radius:8px;padding:10px 18px;font-weight:600;font-size:15px;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+.btn.small{padding:8px 12px;font-size:13.5px;min-height:40px}
+.btn:disabled{opacity:.6;cursor:default}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.msg{min-height:20px;margin-top:10px;font-size:13.5px;color:var(--ink-2)}
+.msg.err{color:var(--watch)}
+
+.tips{list-style:none;margin:0;padding:0}
+.tip-item{padding:14px 0;border-top:1px solid var(--line)}
+.tip-item:first-child{border-top:0;padding-top:2px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px;padding:3px 10px 3px 8px;border-radius:999px}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.watch{background:var(--watch-bg);color:var(--watch)}
+.pill.try{background:var(--try-bg);color:var(--ink)}
+.tip-item h3{margin:8px 0 4px;font:600 15px/1.3 var(--font-display)}
+.tip-item p{color:var(--ink-2);font-size:14px}
+.stamp{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+.flash{animation:flash 1.1s ease-out}
+@keyframes flash{from{background:var(--surface-2)}to{background:var(--surface)}}
+
+.chart{position:relative}
+.chart svg{display:block;touch-action:pan-y}
+.grid{stroke:var(--grid);stroke-width:1}
+.base{stroke:var(--line-strong);stroke-width:1}
+.ax{font:11px var(--font-mono);fill:var(--ink-3)}
+.ax.today{fill:var(--ink);font-weight:500}
+.line.mood{fill:none;stroke:var(--c-mood);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.pt.mood{fill:var(--c-mood);stroke:var(--surface);stroke-width:2}
+.lbl{font:600 12px var(--font-body);fill:var(--ink)}
+.bar{fill:var(--c-study)}
+.bar.below{fill-opacity:.4}
+.stub{fill:var(--ink-3)}
+.goal{stroke:var(--ink-2);stroke-width:1.25;stroke-dasharray:5 4}
+.goal-lbl{font:11px var(--font-mono);fill:var(--ink-2)}
+.cross{stroke:var(--line-strong);stroke-width:1;stroke-dasharray:3 3}
+.tt{position:absolute;top:4px;z-index:5;background:var(--ink);color:var(--surface);padding:8px 10px;border-radius:8px;font-size:12.5px;line-height:1.4;pointer-events:none;max-width:220px;box-shadow:0 4px 16px rgb(0 0 0 / .2)}
+.tt-note{opacity:.85}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.legend .dash{width:16px;height:0;border-top:1.5px dashed var(--ink-2);border-radius:0}
+
+.heat{position:relative;display:flex;flex-direction:column;gap:12px}
+.heat-head{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;margin-bottom:4px}
+.heat-name{font-weight:500;min-width:0}
+.heat-pct{font:500 12px var(--font-mono);color:var(--ink-2);flex:none}
+.cells{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:2px}
+.cell{display:block;height:22px;border-radius:3px}
+.cell.done{background:var(--c-habit)}
+.cell.miss{border:1.5px solid var(--line-strong)}
+.cell.none{background:var(--surface-2)}
+.cell.now{outline:2px solid var(--ink);outline-offset:1px}
+.heat-axis{display:flex;justify-content:space-between;font:11px var(--font-mono);color:var(--ink-3)}
+.legend .cell{display:inline-block;width:14px;height:14px}
+
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:0}
+th{text-align:left;font-weight:500;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:6px 10px 8px 0;border-bottom:1px solid var(--line-strong)}
+td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.num,th.num{font-variant-numeric:tabular-nums}
+td.mono{font-family:var(--font-mono);font-size:12.5px;white-space:nowrap}
+.has-note td{border-bottom:0;padding-bottom:2px}
+.note-row td{padding-top:0;color:var(--ink-2);font-size:13px}
+.table-foot{margin-top:10px}
+.empty{color:var(--ink-2);font-size:14px}
+
+.quiz-card{margin:0}
+.q-inner{max-width:760px}
+.q-top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
+.q-date{font-size:13px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
+.chip{font-size:12.5px;font-weight:500;padding:4px 10px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-2);background:var(--surface)}
+.q-note{margin:10px 0 0;font-size:13px;color:var(--ink-2);max-width:62ch}
+.q-note.warn{color:var(--watch)}
+.qstats{display:flex;flex-wrap:wrap;gap:10px 32px;margin:16px 0}
+.qstat b{display:block;font:700 28px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.qstat span{font-size:12px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase}
+.prog{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;margin:12px 0 16px}
+.prog i{height:5px;border-radius:2px;background:var(--surface-2)}
+.prog i.ok{background:var(--good)}
+.prog i.bad{background:var(--watch)}
+.prog i.cur{background:var(--ink-3)}
+.q-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.q-count{font:500 12.5px var(--font-mono);color:var(--ink-2)}
+.cat-pill{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink)}
+.qtext{font:600 21px/1.3 var(--font-display);text-wrap:balance;margin:14px 0 16px}
+.qtext:focus{outline:none}
+.opts{display:grid;gap:8px}
+.qopt{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:10px;padding:12px 14px;min-height:48px;cursor:pointer;font-size:15.5px;line-height:1.4}
+.qopt:hover:not([aria-disabled="true"]){background:var(--surface-2)}
+.qopt .k{flex:none;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font:500 12px var(--font-mono);border:1px solid var(--line-strong);color:var(--ink-2)}
+.qopt .tx{flex:1;min-width:0}
+.qopt .tag{flex:none;font-size:12px;font-weight:600;padding-top:3px}
+.qopt[aria-disabled="true"]{cursor:default}
+.qopt.ok{border-color:var(--good);background:var(--good-bg)}
+.qopt.ok .tag,.qopt.ok .k{color:var(--good);border-color:var(--good)}
+.qopt.bad{border-color:var(--watch);background:var(--watch-bg)}
+.qopt.bad .tag,.qopt.bad .k{color:var(--watch);border-color:var(--watch)}
+.qopt.dim{opacity:.65}
+.fb{margin-top:14px;padding:14px 16px;border-radius:10px;background:var(--surface-2)}
+.fb p{margin:8px 0 0;color:var(--ink-2);font-size:14px}
+.fb p.src{font-size:12.5px;color:var(--ink-3)}
+.q-actions{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:16px;align-items:center}
+.busy{display:flex;align-items:center;gap:12px;margin:18px 0;font-size:14px;color:var(--ink-2)}
+.spin{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--ink);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.score{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin:10px 0 4px}
+.score b{font:700 56px/1 var(--font-display);font-variant-numeric:tabular-nums}
+.score span{font-size:15px;color:var(--ink-2)}
+.h3s{font:600 14px var(--font-display);margin:22px 0 0}
+.rev{margin:10px 0 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rev li{border-bottom:1px solid var(--line)}
+.rev summary{display:flex;gap:10px;align-items:flex-start;padding:10px 0;cursor:pointer;list-style:none;font-size:14.5px}
+.rev summary::-webkit-details-marker{display:none}
+.rev .mk{flex:none;font-weight:700;width:16px}
+.rev .mk.ok{color:var(--good)}
+.rev .mk.bad{color:var(--watch)}
+.rev .rc{flex:none;font:500 11.5px var(--font-mono);color:var(--ink-3);width:76px;padding-top:2px}
+.rev .rq{flex:1;min-width:0}
+.rev .rd{padding:0 0 12px 26px;font-size:14px;color:var(--ink-2)}
+.rev .rd p{margin:0 0 6px}
+.acc{display:grid;gap:8px;margin-top:12px}
+.acc-row{display:grid;grid-template-columns:84px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:13.5px}
+.acc-track{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.acc-fill{height:100%;background:var(--btn);border-radius:0 4px 4px 0}
+.acc-n{font:500 12px var(--font-mono);color:var(--ink-2);text-align:right}
+.score{margin:6px 0 0}
+.score b{font:600 34px/1 var(--font-display)}
+.score span{font-size:14.5px}
+.strip{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:10px 0 4px}
+.dot2{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:13px;font-weight:700;border:1px solid}
+.dot2.ok{color:var(--good);background:var(--good-bg);border-color:var(--good)}
+.dot2.bad{color:var(--watch);background:var(--watch-bg);border-color:var(--watch)}
+.strip-note{margin-left:8px;font-size:13px;color:var(--ink-2)}
+.fold{border-top:1px solid var(--line);margin-top:10px}
+.fold summary{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;padding:9px 0;font:600 14px var(--font-display);list-style:none}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary::after{content:"+";color:var(--sec-ink);font-size:18px;line-height:1}
+.fold[open] summary::after{content:"\2212"}
+.fold-hint{margin-left:auto;font:500 12.5px var(--font-body);color:var(--ink-2)}
+.fold .rev{margin-top:0;border-top:0}
+.fold .acc{margin:0 0 10px}
+
+
+@media (prefers-reduced-motion:reduce){.flash,.spin{animation:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Life Log</h1>
+      <p class="sub" id="todayLabel"></p>
+    </div>
+  </header>
+
+  <div class="banner" id="banner" hidden>
+    <p><strong>Example data.</strong> The charts and tips below use made-up days so you can see how it works. Save your first entry to replace them with your own.</p>
+    <button type="button" class="btn small ghost" id="toForm">Log today</button>
+  </div>
+
+  <section class="tiles" id="tiles" aria-label="Summary of the last 7 days"></section>
+
+  <div class="layout">
+    <aside class="side">
+      <section class="card" id="logCard">
+        <h2 id="formTitle">Log today</h2>
+        <p class="hint">Takes about a minute. Pick any past day to fill in a missed entry.</p>
+        <form id="logForm" autocomplete="off" novalidate>
+          <div class="field">
+            <label for="date">Date</label>
+            <input type="date" id="date">
+          </div>
+          <fieldset class="field">
+            <legend>Mood</legend>
+            <div class="moods">
+              <input type="radio" name="mood" id="m1" value="1"><label for="m1"><span class="n">1</span><span class="w">Low</span></label>
+              <input type="radio" name="mood" id="m2" value="2"><label for="m2"><span class="n">2</span><span class="w">Down</span></label>
+              <input type="radio" name="mood" id="m3" value="3"><label for="m3"><span class="n">3</span><span class="w">Okay</span></label>
+              <input type="radio" name="mood" id="m4" value="4"><label for="m4"><span class="n">4</span><span class="w">Good</span></label>
+              <input type="radio" name="mood" id="m5" value="5"><label for="m5"><span class="n">5</span><span class="w">Great</span></label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="hours">Study time (hours)</label>
+            <div class="stepper">
+              <button type="button" id="hMinus" aria-label="Subtract 15 minutes">&minus;</button>
+              <input type="number" id="hours" min="0" max="16" step="0.25" inputmode="decimal" placeholder="0">
+              <button type="button" id="hPlus" aria-label="Add 15 minutes">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="topic">What did you study? <span class="opt">optional</span></label>
+            <input type="text" id="topic" maxlength="80">
+          </div>
+          <fieldset class="field">
+            <legend>Habits</legend>
+            <div id="habitList"></div>
+            <button type="button" class="link" id="editHabits" aria-expanded="false" aria-controls="habitEditor">Edit habits and goal</button>
+          </fieldset>
+          <div class="editor" id="habitEditor" hidden>
+            <div>
+              <label for="goal" style="display:block;font-weight:600;font-size:13px;margin-bottom:6px">Daily study goal (hours)</label>
+              <input type="number" id="goal" min="0.25" max="12" step="0.25" inputmode="decimal">
+            </div>
+            <div>
+              <span style="display:block;font-weight:600;font-size:13px;margin-bottom:4px">Your habits (up to 8)</span>
+              <ul id="habitEdit"></ul>
+            </div>
+            <div class="add">
+              <input type="text" id="newHabit" maxlength="40" placeholder="New habit, e.g. Stretch">
+              <button type="button" class="btn small" id="addHabit">Add</button>
+            </div>
+            <div>
+              <span style="display:block;font-weight:600;font-size:13px;margin-bottom:4px">Backup</span>
+              <p class="hint" style="margin:0 0 8px">Your entries are saved only on this device. Download a backup now and then, and restore it on a new phone.</p>
+              <div class="actions">
+                <button type="button" class="btn small ghost" id="backupBtn">Download backup</button>
+                <button type="button" class="btn small ghost" id="restoreBtn">Restore backup</button>
+                <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="note">Note <span class="opt">optional</span></label>
+            <textarea id="note" rows="2" maxlength="280"></textarea>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn" id="saveBtn">Save entry</button>
+            <button type="button" class="btn ghost" id="delBtn" hidden>Delete</button>
+          </div>
+          <p class="msg" id="saveMsg" role="status"></p>
+        </form>
+      </section>
+
+      <section class="card" id="tipsCard">
+        <h2>What to try next</h2>
+        <p class="hint">Rewritten from your numbers every time you save an entry.</p>
+        <div aria-live="polite"><ul class="tips" id="tips"></ul></div>
+        <p class="stamp" id="stamp"></p>
+      </section>
+
+      <section class="card quiz-card" id="quizCard" aria-labelledby="quizTitle">
+        <div class="q-inner" id="quiz"></div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="card week-card" id="weekCard" aria-label="Weekly look-back"></section>
+      <div class="range-row">
+        <h2 class="range-h">Trends</h2>
+        <div class="seg" role="group" aria-label="Chart range">
+          <button type="button" id="r14" aria-pressed="true">14 days</button>
+          <button type="button" id="r30" aria-pressed="false">30 days</button>
+        </div>
+      </div>
+      <section class="card">
+        <h2>Mood</h2>
+        <p class="hint">Daily rating from 1 (low) to 5 (great).</p>
+        <div class="chart" id="moodChart"></div>
+      </section>
+      <section class="card">
+        <h2>Study time</h2>
+        <p class="hint">Hours per day against your goal.</p>
+        <div class="chart" id="studyChart"></div>
+        <div class="legend">
+          <span><i style="background:var(--c-study)"></i>Goal reached</span>
+          <span><i style="background:var(--c-study);opacity:.4"></i>Below goal</span>
+          <span><i class="dash"></i>Daily goal</span>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Habits</h2>
+        <p class="hint">One row per habit. The percentage covers the days you logged.</p>
+        <div class="heat" id="heat"></div>
+        <div class="legend">
+          <span><i class="cell done"></i>Done</span>
+          <span><i class="cell miss"></i>Not done</span>
+          <span><i class="cell none"></i>Not logged</span>
+        </div>
+      </section>
+      <section class="card">
+        <h2>History</h2>
+        <p class="hint">Every entry as a table. Edit one to fix a mistake.</p>
+        <div class="tablewrap" id="history"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var MOODS=['','Low','Down','Okay','Good','Great'];
+var DEFAULT_HABITS=['Slept 7+ hours','Exercised','Time outside','Read 20 minutes','Phone off by 11pm'];
+var LS_KEY='daybook-v1';
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function pad(n){return String(n).padStart(2,'0')}
+function key(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function parse(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])}
+function addDays(s,n){var d=parse(s);d.setDate(d.getDate()+n);return key(d)}
+var TODAY=key(new Date());
+function fmtLong(s){return parse(s).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
+function fmtShort(s){return parse(s).toLocaleDateString(undefined,{month:'short',day:'numeric'})}
+function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function mean(a){return a.length?a.reduce(function(s,x){return s+x},0)/a.length:null}
+function sum(a){return a.reduce(function(s,x){return s+x},0)}
+function f1(n){return (Math.round(n*10)/10).toFixed(1)}
+function fh(n){return String(+(+n).toFixed(2))}
+function trunc(t,n){return t.length>n?t.slice(0,n-1)+'…':t}
+
+var state={entries:{},settings:{goal:1.5,habits:DEFAULT_HABITS.slice()},range:14,showAll:false,lastUpdated:null,justSaved:false,quiz:{days:{}}};
+
+/* ---------- example data, shown only until the first real entry ---------- */
+function makeSample(){
+  var moods=[3,4,3,null,4,4,3,5,4,null,4,2,3,4];
+  var hours=[1.5,2,0,0,2.5,1.75,0,2,1.5,0,2,0,1,1.75];
+  var bits={'Slept 7+ hours':'10110111011011','Exercised':'01001101101001','Time outside':'01101101111001','Read 20 minutes':'00100010010000','Phone off by 11pm':'10010100100100'};
+  var notes={1:'Good gym session',7:'Finished the chapter',11:'Deadline stress'};
+  var out={};
+  for(var i=0;i<14;i++){
+    if(moods[i]==null)continue;
+    var date=addDays(TODAY,-(13-i)),h={};
+    DEFAULT_HABITS.forEach(function(n){h[n]=bits[n][i]==='1'});
+    out[date]={date:date,mood:moods[i],hours:hours[i],topic:'',note:notes[i]||'',habits:h};
+  }
+  return out;
+}
+var SAMPLE=makeSample();
+var SAMPLE_SETTINGS={goal:1.5,habits:DEFAULT_HABITS.slice()};
+function view(){
+  var real=Object.keys(state.entries).length>0;
+  return real?{entries:state.entries,settings:state.settings,sample:false}:{entries:SAMPLE,settings:SAMPLE_SETTINGS,sample:true};
+}
+
+/* ---------- (de)serialising ---------- */
+function serEntry(e){return {date:e.date,mood:e.mood,hours:e.hours,topic:e.topic||'',note:e.note||'',h:Object.keys(e.habits).map(function(n){return {n:n,d:!!e.habits[n]}})}}
+function parseEntry(o){
+  if(!o||typeof o.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(o.date))return null;
+  var mood=Number(o.mood);if(!(mood>=1&&mood<=5))return null;
+  var h={};(Array.isArray(o.h)?o.h:[]).forEach(function(x){if(x&&typeof x.n==='string')h[x.n]=!!x.d});
+  var hours=Number(o.hours);if(!(hours>=0))hours=0;
+  return {date:o.date,mood:mood,hours:hours,topic:String(o.topic||''),note:String(o.note||''),habits:h};
+}
+function parseSettings(o){
+  if(!o)return null;
+  var g=Number(o.goal);if(!(g>=0.25&&g<=12))g=1.5;
+  var hs=Array.isArray(o.habits)?o.habits.filter(function(x){return typeof x==='string'&&x.trim()}).map(function(x){return x.trim().slice(0,40)}).slice(0,8):[];
+  if(!hs.length)hs=DEFAULT_HABITS.slice();
+  return {goal:g,habits:hs};
+}
+
+/* ---------- storage: this device always, the artifact's private database when available ---------- */
+function saveLocal(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify({entries:Object.keys(state.entries).map(function(k){return serEntry(state.entries[k])}),settings:state.settings}))}catch(e){}
+}
+function loadLocal(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);if(!raw)return false;
+    var o=JSON.parse(raw);
+    (o.entries||[]).forEach(function(d){var e=parseEntry(d);if(e)state.entries[e.date]=e});
+    var s=parseSettings(o.settings);if(s)state.settings=s;
+    return true;
+  }catch(e){return false}
+}
+var Store={
+  col:null,
+  saveEntry:function(e){return this.col?this.col.doc('e-'+e.date).set(serEntry(e)):Promise.resolve()},
+  del:function(date){return this.col?this.col.doc('e-'+date).delete():Promise.resolve()},
+  saveSettings:function(){return this.col?this.col.doc('settings').set({goal:state.settings.goal,habits:state.settings.habits.slice()}):Promise.resolve()},
+  saveQDay:function(day){return this.col?this.col.doc('q-'+day.date).set(serQDay(day)):Promise.resolve()}
+};
+async function initCloud(hadLocal){
+  var db=null,id=null;
+  try{
+    db=await (window.claude&&window.claude.use?window.claude.use('db'):null);
+    var user=await (window.claude&&window.claude.use?window.claude.use('user'):null);
+    if(user)id=await user.id();
+  }catch(e){}
+  if(db){try{var bs=await db.doc('quiz/briefing').get();if(bs.exists)applyBriefing(bs.data())}catch(e){}}
+  if(!db||!id)return;
+  var col;try{col=db.collection('data/users/'+id)}catch(e){return}
+  Store.col=col;
+  var first=true;
+  col.onSnapshot(function(snap){
+    var ents={},st=null,qd={};
+    snap.docs.forEach(function(d){
+      var data=d.data();if(!data)return;
+      if(d.id==='settings')st=parseSettings(data);
+      else if(d.id.indexOf('e-')===0){var e=parseEntry(data);if(e)ents[e.date]=e}
+      else if(d.id.indexOf('q-')===0){var qq=parseQDay(data);if(qq)qd[qq.date]=qq}
+    });
+    mergeQuizCloud(qd,first);
+    var hasCloud=Object.keys(ents).length>0||!!st;
+    if(first){
+      first=false;
+      if(!hasCloud){
+        (async function(){
+          try{
+            var ks=Object.keys(state.entries);
+            for(var i=0;i<ks.length;i++)await Store.saveEntry(state.entries[ks[i]]);
+            if(hadLocal)await Store.saveSettings();
+          }catch(e){}
+        })();
+        return;
+      }
+    }
+    state.entries=ents;if(st)state.settings=st;
+    saveLocal();renderHabitChecks();renderHabitEditor();render();
+  },function(){});
+}
+
+/* ---------- data helpers ---------- */
+function daysBack(n){var a=[];for(var i=0;i<n;i++)a.push(addDays(TODAY,-(n-1-i)));return a}
+function pick(entries,days){return days.map(function(d){return entries[d]}).filter(Boolean)}
+function habitStreak(entries,h){
+  var d=entries[TODAY]?TODAY:addDays(TODAY,-1),n=0;
+  while(entries[d]&&entries[d].habits[h]===true){n++;d=addDays(d,-1)}
+  return n;
+}
+
+/* ---------- tips engine ---------- */
+function buildInsights(v){
+  var entries=v.entries,st=v.settings,g=st.goal;
+  var all=Object.keys(entries).map(function(k){return entries[k]}).sort(function(a,b){return a.date<b.date?-1:1});
+  var out=[];
+  function add(kind,title,body){out.push({kind:kind,title:title,body:body})}
+  if(all.length<3){
+    add('try','Log three days to unlock tips','You have '+all.length+(all.length===1?' entry':' entries')+' so far. Once there are three, this panel starts comparing mood, study time and habits. Logging at the same time every day, such as right after dinner, makes it stick.');
+    return {items:out,n:all.length};
+  }
+  var w7=daysBack(7),p7=daysBack(14).slice(0,7);
+  var e7=pick(entries,w7),ep7=pick(entries,p7),rec=pick(entries,daysBack(28)),e14=pick(entries,daysBack(14));
+
+  var l3=all.slice(-3);
+  if(l3.every(function(e){return e.mood<=2})&&l3[2].date>=addDays(TODAY,-3)){
+    add('watch','Three low days in a row','Your last three entries are all a 1 or 2. That can happen in a heavy stretch. Pick one small thing from your habit list today and tell someone you trust how it is going. If low days last two weeks or feel heavy, a doctor or counselor can help.');
+  }
+
+  var m7=mean(e7.map(function(e){return e.mood})),mp=mean(ep7.map(function(e){return e.mood}));
+  if(e7.length>=3&&ep7.length>=3){
+    var dm=m7-mp;
+    if(dm>=0.5)add('win','Mood is up on last week','Your average is '+f1(m7)+', up from '+f1(mp)+' the week before. Look at what changed and keep it in place.');
+    else if(dm<=-0.5)add('watch','Mood dipped this week','Your average is '+f1(m7)+', down from '+f1(mp)+' the week before. Check sleep, study load and which habits slipped (see the habit tips), and change one thing at a time.');
+  }
+
+  if(e7.length<5)add('try','Log more days','You logged '+e7.length+' of the last 7 days. Tips get sharper with more days. Set a daily reminder on your phone for a fixed time, and log on days you skipped studying too.');
+  else if(e7.length===7&&all.length>=7)add('win','Logged all 7 days','Every day this week has an entry. That is what makes the patterns below trustworthy.');
+
+  var goalDays=e7.filter(function(e){return e.hours>=g}).length,total7=sum(e7.map(function(e){return e.hours})),totalP=sum(ep7.map(function(e){return e.hours}));
+  if(e7.length>=3){
+    if(goalDays>=5)add('win','Study goal reached '+goalDays+' of the last 7 days',fh(total7)+' hours in total. Keep the same start time, and plan one lighter day a week so it lasts.');
+    else if(goalDays<=2)add('try','Study goal reached '+goalDays+' of 7 days','Your goal is '+fh(g)+' h a day. If that is steep right now, lower it for a week under Edit habits and goal, then raise it again. Or fix a start time and commit only to a first 25-minute block. Starting is the hard part.');
+    else add('try','Close to a steady rhythm','You reached your goal on '+goalDays+' of 7 days. Pick the day you usually miss and decide in advance when you will study on it.');
+  }
+  if(totalP>=3&&total7<0.7*totalP)add('try','Study time fell this week',fh(total7)+' h this week against '+fh(totalP)+' h the week before. Look at what took the time, and put your next two sessions in your calendar now.');
+
+  var met=rec.filter(function(e){return e.hours>=g}),nmet=rec.filter(function(e){return e.hours<g});
+  if(met.length>=3&&nmet.length>=3){
+    var a=mean(met.map(function(e){return e.mood})),b=mean(nmet.map(function(e){return e.mood}));
+    if(a-b>=0.4)add('win','Study days feel better','Mood averages '+f1(a)+' on days you reach your goal and '+f1(b)+' on days you do not. Getting started seems to pay off.');
+    else if(b-a>=0.4)add('try','Goal days cost some mood','Mood averages '+f1(a)+' on days you reach your goal and '+f1(b)+' on days you do not. Try shorter sessions with a real break between them, and stop one session earlier.');
+  }
+
+  var links=[];
+  st.habits.forEach(function(h){
+    var done=rec.filter(function(e){return e.habits[h]===true}),miss=rec.filter(function(e){return e.habits[h]===false});
+    if(done.length>=3&&miss.length>=3){
+      var x=mean(done.map(function(e){return e.mood})),y=mean(miss.map(function(e){return e.mood}));
+      if(x-y>=0.5)links.push({h:h,x:x,y:y,nd:done.length,nm:miss.length,diff:x-y});
+    }
+  });
+  links.sort(function(p,q){return q.diff-p.diff}).slice(0,2).forEach(function(l){
+    add('try','“'+l.h+'” goes with better days','Mood averages '+f1(l.x)+' when you do it and '+f1(l.y)+' when you do not ('+l.nd+' days against '+l.nm+'). Protect this one on busy days.');
+  });
+
+  var rates=[],streaks=[];
+  st.habits.forEach(function(h){
+    var done=e14.filter(function(e){return e.habits[h]===true}).length,tot=e14.filter(function(e){return e.habits[h]!==undefined}).length;
+    if(tot>=3)rates.push({h:h,done:done,tot:tot,r:done/tot});
+    var s=habitStreak(entries,h);if(s>=3)streaks.push({h:h,s:s});
+  });
+  rates.sort(function(p,q){return p.r-q.r});
+  if(rates.length&&rates[0].r<0.5)add('try','“'+rates[0].h+'” is the one slipping','Done on '+rates[0].done+' of '+rates[0].tot+' logged days. Shrink it to a two-minute version and attach it to something you already do every day.');
+  streaks.sort(function(p,q){return q.s-p.s});
+  if(streaks.length)add('win',streaks[0].s+'-day streak: '+streaks[0].h,'Do not break the chain tomorrow. On a hard day, do the smallest version.');
+  else if(rates.length&&rates[rates.length-1].r>=0.8){var t=rates[rates.length-1];add('win','“'+t.h+'” is solid','Done on '+t.done+' of '+t.tot+' logged days. Use it as the anchor for a habit that is slipping.');}
+
+  var rank={watch:0,'try':1,win:2};
+  out.sort(function(p,q){return rank[p.kind]-rank[q.kind]});
+  if(!out.length)add('try','No strong patterns yet','Nothing stands out in your recent days. Keep logging; patterns usually show after two to three weeks of entries.');
+  return {items:out.slice(0,6),n:all.length};
+}
+var ICON={
+  good:'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  watch:'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2.5l6 10.5H2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.6v3M8 11.4v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  'try':'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+var LABEL={good:'Keep going',watch:'Look at this','try':'Try this'};
+function renderTips(v){
+  var r=buildInsights(v);
+  $('tips').innerHTML=(state.tipsAll?r.items:r.items.slice(0,3)).map(function(i){
+    var k=i.kind==='win'?'good':i.kind;
+    return '<li class="tip-item"><span class="pill '+k+'">'+ICON[k]+LABEL[k]+'</span><h3>'+esc(i.title)+'</h3><p>'+esc(i.body)+'</p></li>';
+  }).join('')+(r.items.length>3?'<li class="tips-more"><button type="button" class="link" id="tipsMore">'+(state.tipsAll?'Show fewer tips':'Show '+(r.items.length-3)+' more')+'</button></li>':'');
+  var s='Based on '+r.n+(r.n===1?' entry. ':' entries. ');
+  if(v.sample)s='Based on example data. ';
+  if(state.lastUpdated)s+='Updated '+state.lastUpdated.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})+'. ';
+  s+='These are patterns in your own numbers, a prompt to experiment and not proof of cause.';
+  $('stamp').textContent=s;
+  if(state.justSaved&&!reduce){var c=$('tipsCard');c.classList.remove('flash');void c.offsetWidth;c.classList.add('flash')}
+  state.justSaved=false;
+}
+
+/* ---------- summary tiles ---------- */
+function spark(vals){
+  var W=96,H=30,n=vals.length;
+  function x(i){return 4+i*(W-8)/(n-1)}
+  function y(m){return 4+(5-m)/4*(H-8)}
+  var d='',prev=false,last=-1;
+  vals.forEach(function(m,i){if(m==null){prev=false;return}d+=(prev?'L':'M')+x(i).toFixed(1)+' '+y(m).toFixed(1);prev=true;last=i});
+  var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" aria-hidden="true"><path class="line mood" d="'+d+'" style="stroke-width:1.75"/>';
+  if(last>=0)s+='<circle class="pt mood" cx="'+x(last)+'" cy="'+y(vals[last])+'" r="3"/>';
+  return s+'</svg>';
+}
+function renderTiles(v){
+  var en=v.entries,g=v.settings.goal,w7=daysBack(7);
+  var e7=pick(en,w7),ep7=pick(en,daysBack(14).slice(0,7));
+  var m7=mean(e7.map(function(e){return e.mood})),mp=mean(ep7.map(function(e){return e.mood}));
+  var delta='Not enough days to compare yet';
+  if(m7!=null&&mp!=null){var d=m7-mp;delta=Math.abs(d)<0.05?'Same as the week before':(d>0?'Up ':'Down ')+f1(Math.abs(d))+' from the week before'}
+  var total=sum(e7.map(function(e){return e.hours})),metDays=e7.filter(function(e){return e.hours>=g}).length;
+  var pips=w7.map(function(d){var e=en[d];var c=!e?'':e.hours>=g?'met':e.hours>0?'some':'';return '<span class="pip '+c+'"></span>'}).join('');
+  var poss=0,done=0;
+  e7.forEach(function(e){v.settings.habits.forEach(function(h){if(e.habits[h]!==undefined){poss++;if(e.habits[h])done++}})});
+  var pct=poss?Math.round(done/poss*100):null;
+  $('tiles').innerHTML='<p class="tiles-cap">Last 7 days</p>'+
+    '<article class="tile"><div class="tile-label"><span class="dot" style="background:var(--c-mood)"></span>Mood</div>'+
+      '<div class="tile-main"><div class="big">'+(m7==null?'–':f1(m7)+'<small>/ 5</small>')+'</div>'+spark(w7.map(function(d){return en[d]?en[d].mood:null}))+'</div>'+
+      '<div class="tile-sub">'+delta+'</div></article>'+
+    '<article class="tile"><div class="tile-label"><span class="dot" style="background:var(--c-study)"></span>Study</div>'+
+      '<div class="tile-main"><div class="big">'+fh(total)+'<small>h</small></div><div class="pips" role="img" aria-label="'+metDays+' of 7 days at goal">'+pips+'</div></div>'+
+      '<div class="tile-sub">'+metDays+' of 7 days at '+fh(g)+' h or more</div></article>'+
+    '<article class="tile"><div class="tile-label"><span class="dot" style="background:var(--c-habit)"></span>Habits</div>'+
+      '<div class="tile-main"><div class="big">'+(pct==null?'–':pct+'<small>%</small>')+'</div><div class="meter" role="img" aria-label="'+(pct||0)+' percent"><i style="width:'+(pct||0)+'%"></i></div></div>'+
+      '<div class="tile-sub">'+(poss?done+' of '+poss+' checks done':'No habit checks logged yet')+'</div></article>';
+}
+
+/* ---------- charts ---------- */
+function boxW(id){return Math.max(260,Math.floor($(id).clientWidth)||600)}
+function xAxis(days,M,H,colW){
+  var n=days.length,step=n<=14?2:5,s='',first=(n-1)%step;
+  days.forEach(function(ds,i){
+    if((n-1-i)%step!==0)return;
+    var dt=parse(ds),cx=M.l+(i+.5)*colW;
+    s+='<text class="ax'+(ds===TODAY?' today':'')+'" x="'+cx+'" y="'+(H-M.b+16)+'" text-anchor="middle">'+dt.getDate()+'</text>';
+    if(i===first||dt.getDate()<=step)s+='<text class="ax" x="'+Math.max(cx,M.l+4)+'" y="'+(H-M.b+30)+'" text-anchor="middle">'+dt.toLocaleDateString(undefined,{month:'short'})+'</text>';
+  });
+  return s;
+}
+function hover(wrap,svg,n,M,W,html){
+  var tip=wrap.querySelector('.tt'),cross=svg.querySelector('.cross'),colW=(W-M.l-M.r)/n;
+  function hide(){cross.style.display='none';tip.hidden=true}
+  function show(ev){
+    var r=svg.getBoundingClientRect(),x=ev.clientX-r.left,i=Math.floor((x-M.l)/colW);
+    if(i<0||i>=n){hide();return}
+    var cx=M.l+(i+.5)*colW;
+    cross.setAttribute('x1',cx);cross.setAttribute('x2',cx);cross.style.display='';
+    tip.innerHTML=html(i);tip.hidden=false;
+    var tw=tip.offsetWidth,left=Math.max(4,Math.min(W-tw-4,cx-tw/2));
+    tip.style.left=left+'px';
+  }
+  svg.addEventListener('pointermove',show);svg.addEventListener('pointerdown',show);svg.addEventListener('pointerleave',hide);
+}
+function renderMood(v){
+  var wrap=$('moodChart'),days=daysBack(state.range),n=days.length,W=boxW('moodChart'),H=210,M={l:26,r:10,t:18,b:42};
+  var ih=H-M.t-M.b,colW=(W-M.l-M.r)/n;
+  function x(i){return M.l+(i+.5)*colW}
+  function y(m){return M.t+(5-m)/4*ih}
+  var E=days.map(function(d){return v.entries[d]});
+  var logged=E.filter(Boolean),last=-1;
+  E.forEach(function(e,i){if(e)last=i});
+  var label='Mood over the last '+n+' days. '+(logged.length?'Average '+f1(mean(logged.map(function(e){return e.mood})))+' out of 5 across '+logged.length+' logged days.':'No days logged.');
+  var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(label)+'">';
+  for(var m=1;m<=5;m++)s+='<line class="'+(m===1?'base':'grid')+'" x1="'+M.l+'" x2="'+(W-M.r)+'" y1="'+y(m)+'" y2="'+y(m)+'"/><text class="ax" x="'+(M.l-8)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+'</text>';
+  var d='',prev=false;
+  E.forEach(function(e,i){if(e){d+=(prev?'L':'M')+x(i).toFixed(1)+' '+y(e.mood).toFixed(1);prev=true}else prev=false});
+  s+='<path class="line mood" d="'+d+'"/>';
+  E.forEach(function(e,i){if(e)s+='<circle class="pt mood" cx="'+x(i).toFixed(1)+'" cy="'+y(e.mood).toFixed(1)+'" r="'+(i===last?5:3.5)+'"/>'});
+  if(last>=0)s+='<text class="lbl" x="'+x(last)+'" y="'+(y(E[last].mood)-11)+'" text-anchor="middle">'+E[last].mood+'</text>';
+  s+=xAxis(days,M,H,colW);
+  s+='<line class="cross" y1="'+M.t+'" y2="'+(H-M.b)+'" style="display:none"/></svg><div class="tt" hidden></div>';
+  wrap.innerHTML=s;
+  hover(wrap,wrap.querySelector('svg'),n,M,W,function(i){
+    var e=E[i],h='<strong>'+esc(fmtLong(days[i]))+'</strong><br>';
+    if(!e)return h+'Not logged';
+    h+='Mood '+e.mood+' · '+MOODS[e.mood];
+    if(e.note)h+='<br><span class="tt-note">'+esc(trunc(e.note,90))+'</span>';
+    return h;
+  });
+}
+function renderStudy(v){
+  var wrap=$('studyChart'),days=daysBack(state.range),n=days.length,W=boxW('studyChart'),H=210,M={l:30,r:64,t:18,b:42};
+  var ih=H-M.t-M.b,colW=(W-M.l-M.r)/n,g=v.settings.goal;
+  var E=days.map(function(d){return v.entries[d]});
+  var maxH=Math.max(g,1);E.forEach(function(e){if(e&&e.hours>maxH)maxH=e.hours});
+  var steps=[0.5,1,2,4,5,10],step=10;
+  for(var k=0;k<steps.length;k++){if(Math.ceil(maxH*1.08/steps[k])<=4){step=steps[k];break}}
+  var top=Math.ceil(maxH*1.08/step)*step;
+  function y(h){return M.t+(1-h/top)*ih}
+  var bw=Math.min(26,Math.max(4,colW-4)),total=sum(E.filter(Boolean).map(function(e){return e.hours}));
+  var last=-1;E.forEach(function(e,i){if(e)last=i});
+  var label='Study hours per day over the last '+n+' days. '+fh(total)+' hours in total. Daily goal '+fh(g)+' hours.';
+  var s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(label)+'">';
+  for(var t=0;t<=top+1e-9;t+=step)s+='<line class="'+(t===0?'base':'grid')+'" x1="'+M.l+'" x2="'+(W-M.r)+'" y1="'+y(t)+'" y2="'+y(t)+'"/><text class="ax" x="'+(M.l-8)+'" y="'+(y(t)+4)+'" text-anchor="end">'+fh(t)+'</text>';
+  E.forEach(function(e,i){
+    if(!e)return;
+    var cx=M.l+(i+.5)*colW,bx=cx-bw/2,base=y(0);
+    if(e.hours<=0){s+='<rect class="stub" x="'+bx.toFixed(1)+'" y="'+(base-2)+'" width="'+bw+'" height="2" rx="1"/>';return}
+    var by=y(e.hours),h=base-by,r=Math.min(4,bw/2,h);
+    s+='<path class="bar'+(e.hours>=g?'':' below')+'" d="M'+bx.toFixed(1)+' '+base+'V'+(by+r).toFixed(1)+'a'+r+' '+r+' 0 0 1 '+r+' -'+r+'H'+(bx+bw-r).toFixed(1)+'a'+r+' '+r+' 0 0 1 '+r+' '+r+'V'+base+'Z"/>';
+  });
+  s+='<line class="goal" x1="'+M.l+'" x2="'+(W-M.r)+'" y1="'+y(g)+'" y2="'+y(g)+'"/>';
+  s+='<text class="goal-lbl" x="'+(W-M.r+6)+'" y="'+(y(g)+4)+'" text-anchor="start">Goal '+fh(g)+' h</text>';
+  if(last>=0&&E[last].hours>0)s+='<text class="lbl" x="'+(M.l+(last+.5)*colW)+'" y="'+(y(E[last].hours)-6)+'" text-anchor="middle">'+fh(E[last].hours)+'</text>';
+  s+=xAxis(days,M,H,colW);
+  s+='<line class="cross" y1="'+M.t+'" y2="'+(H-M.b)+'" style="display:none"/></svg><div class="tt" hidden></div>';
+  wrap.innerHTML=s;
+  hover(wrap,wrap.querySelector('svg'),n,M,W,function(i){
+    var e=E[i],h='<strong>'+esc(fmtLong(days[i]))+'</strong><br>';
+    if(!e)return h+'Not logged';
+    h+=fh(e.hours)+' h'+(e.hours>=g?' · goal reached':'');
+    if(e.topic)h+='<br><span class="tt-note">'+esc(trunc(e.topic,60))+'</span>';
+    return h;
+  });
+}
+function renderHeat(v){
+  var days=daysBack(state.range),n=days.length,html='';
+  v.settings.habits.forEach(function(h){
+    var done=0,tot=0;
+    var cells=days.map(function(d){
+      var e=v.entries[d],val=e?e.habits[h]:undefined,cls='none',txt='not logged';
+      if(val===true){cls='done';txt='done';done++;tot++}
+      else if(val===false){cls='miss';txt='not done';tot++}
+      return '<span class="cell '+cls+(d===TODAY?' now':'')+'" data-tip="'+esc(fmtLong(d)+' · '+txt)+'"></span>';
+    }).join('');
+    html+='<div><div class="heat-head"><span class="heat-name">'+esc(h)+'</span><span class="heat-pct">'+(tot?Math.round(done/tot*100)+'%':'–')+'</span></div><div class="cells" style="--n:'+n+'">'+cells+'</div></div>';
+  });
+  html+='<div class="heat-axis"><span>'+esc(fmtShort(days[0]))+'</span><span>Today</span></div><div class="tt" hidden></div>';
+  var wrap=$('heat');wrap.innerHTML=html;
+  var tip=wrap.querySelector('.tt');
+  wrap.onpointerover=function(ev){
+    var c=ev.target.closest&&ev.target.closest('.cell');
+    if(!c){tip.hidden=true;return}
+    var cr=c.getBoundingClientRect(),wr=wrap.getBoundingClientRect();
+    tip.textContent=c.getAttribute('data-tip');tip.hidden=false;
+    var tw=tip.offsetWidth;
+    tip.style.left=Math.max(0,Math.min(wr.width-tw,cr.left-wr.left+cr.width/2-tw/2))+'px';
+    tip.style.top=(cr.top-wr.top-tip.offsetHeight-6)+'px';
+  };
+  wrap.onpointerleave=function(){tip.hidden=true};
+}
+function renderHistory(v){
+  var rows=Object.keys(v.entries).map(function(k){return v.entries[k]}).sort(function(a,b){return a.date<b.date?1:-1});
+  var shown=state.showAll?rows:rows.slice(0,8);
+  var hs=v.settings.habits;
+  var h='<table><thead><tr><th>Date</th><th>Mood</th><th class="num">Study</th><th class="num">Habits</th>'+(v.sample?'':'<th><span class="sr" style="position:absolute;left:-9999px">Edit</span></th>')+'</tr></thead><tbody>';
+  shown.forEach(function(e){
+    var tr=hs.filter(function(n){return e.habits[n]!==undefined}).length,dn=hs.filter(function(n){return e.habits[n]===true}).length;
+    var note=[e.topic,e.note].filter(Boolean).join(' · ');
+    h+='<tr'+(note?' class="has-note"':'')+'><td class="mono">'+esc(fmtLong(e.date))+'</td><td>'+e.mood+' · '+MOODS[e.mood]+'</td><td class="num">'+fh(e.hours)+' h</td><td class="num">'+(tr?dn+' of '+tr:'–')+'</td>'+(v.sample?'':'<td><button type="button" class="link" data-edit="'+e.date+'">Edit</button></td>')+'</tr>'+(note?'<tr class="note-row"><td colspan="'+(v.sample?4:5)+'">'+esc(trunc(note,120))+'</td></tr>':'');
+  });
+  h+='</tbody></table>';
+  if(rows.length>8)h+='<div class="table-foot"><button type="button" class="link" id="toggleAll">'+(state.showAll?'Show the latest 8':'Show all '+rows.length)+'</button></div>';
+  $('history').innerHTML=h;
+}
+function renderWeek(v){
+  var el=$('weekCard');if(!el)return;
+  var dow=parse(TODAY).getDay(),end=addDays(TODAY,-dow),start=addDays(end,-6),days=[],i;
+  for(i=0;i<7;i++)days.push(addDays(start,i));
+  var e=pick(v.entries,days),ep=pick(v.entries,days.map(function(x){return addDays(x,-7)})),g=v.settings.goal;
+  var body;
+  if(!e.length){
+    body='<p class="hint" style="margin:12px 0 0">No entries that week. Log a few days and your look-back fills in here every Sunday.</p>';
+  }else{
+    var m=mean(e.map(function(x){return x.mood})),mp=mean(ep.map(function(x){return x.mood}));
+    var md=mp==null?'No week before to compare':(Math.abs(m-mp)<0.05?'Same as the week before':(m>mp?'Up ':'Down ')+f1(Math.abs(m-mp))+' on the week before');
+    var hrs=sum(e.map(function(x){return x.hours})),gd=e.filter(function(x){return x.hours>=g}).length;
+    var poss=0,done=0;
+    e.forEach(function(x){v.settings.habits.forEach(function(h){if(x.habits[h]!==undefined){poss++;if(x.habits[h])done++}})});
+    var best=e.slice().sort(function(a,b){return b.mood-a.mood||b.hours-a.hours})[0];
+    var qd=days.map(function(k){return state.quiz.days[k]}).filter(function(x){return x&&x.done}),qn=0,qok=0;
+    qd.forEach(function(d){d.qs.forEach(function(q,j){if(d.ans[j]>=0){qn++;if(d.ans[j]===q.a)qok++}})});
+    var top=null;
+    if(poss){var hr=v.settings.habits.map(function(h){var n=0,dn=0;e.forEach(function(x){if(x.habits[h]!==undefined){n++;if(x.habits[h])dn++}});return {h:h,r:n?dn/n:-1}}).filter(function(x){return x.r>=0}).sort(function(a,b){return b.r-a.r});top=hr[0]}
+    body='<div class="qstats">'+
+      '<div class="qstat"><b>'+f1(m)+'<small style="display:inline;font-size:13px;margin:0 0 0 3px">/ 5</small></b><span>Mood average</span><small>'+md+'</small></div>'+
+      '<div class="qstat"><b>'+fh(hrs)+' h</b><span>Study</span><small>Goal reached on '+gd+' of 7 days</small></div>'+
+      '<div class="qstat"><b>'+(poss?Math.round(done/poss*100)+'%':'&ndash;')+'</b><span>Habits done</span><small>'+(top?'Most kept: '+esc(top.h):'No habits logged')+'</small></div>'+
+      '<div class="qstat"><b>'+qd.length+' / 7</b><span>Quiz days</span><small>'+(qn?Math.round(qok/qn*100)+'% correct':'No quizzes finished')+'</small></div>'+
+      '</div><ul class="wk-lines">'+
+      '<li>Best day: <b>'+esc(fmtLong(best.date))+'</b>, mood '+best.mood+' ('+MOODS[best.mood]+') and '+fh(best.hours)+' h of study.'+(best.note?' '+esc(trunc(best.note,80)):'')+'</li>'+
+      '<li>You logged <b>'+e.length+' of 7</b> days.</li></ul>';
+  }
+  el.innerHTML='<details class="fold wk"'+(dow===0?' open':'')+'><summary>Weekly look-back <span class="fold-hint">'+esc(fmtShort(start))+' &ndash; '+esc(fmtShort(end))+'</span></summary>'+body+'</details>';
+}
+function render(){
+  var v=view();
+  $('banner').hidden=!v.sample;
+  renderTiles(v);renderTips(v);renderWeek(v);renderCharts(v);renderHeat(v);renderHistory(v);
+}
+function renderCharts(v){v=v||view();renderMood(v);renderStudy(v)}
+
+/* ---------- form ---------- */
+function renderHabitChecks(keep){
+  var checked=keep||new Set(Array.prototype.map.call(document.querySelectorAll('#habitList input:checked'),function(i){return i.getAttribute('data-name')}));
+  $('habitList').innerHTML=state.settings.habits.map(function(h,i){
+    return '<label class="chk" for="hab-'+i+'"><input type="checkbox" id="hab-'+i+'" data-name="'+esc(h)+'"'+(checked.has(h)?' checked':'')+'><span class="box"></span><span>'+esc(h)+'</span></label>';
+  }).join('');
+}
+function renderHabitEditor(){
+  $('goal').value=state.settings.goal;
+  $('habitEdit').innerHTML=state.settings.habits.map(function(h,i){
+    return '<li><span>'+esc(h)+'</span><button type="button" class="link danger" data-rm="'+i+'" aria-label="Remove '+esc(h)+'">Remove</button></li>';
+  }).join('');
+}
+var delArmed=false,delTimer=null;
+function resetDel(){delArmed=false;clearTimeout(delTimer);$('delBtn').textContent='Delete'}
+function msg(t,err){var m=$('saveMsg');m.textContent=t;m.className='msg'+(err?' err':'')}
+function formMeta(date){
+  var e=state.entries[date];
+  $('formTitle').textContent=date===TODAY?'Log today':'Log '+fmtLong(date);
+  $('saveBtn').textContent=e?'Update entry':'Save entry';
+  $('delBtn').hidden=!e;resetDel();
+}
+function loadForm(date){
+  var e=state.entries[date];
+  $('date').value=date;
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=mood]'),function(r){r.checked=!!e&&Number(r.value)===e.mood});
+  $('hours').value=e?String(e.hours):'';
+  $('topic').value=e?e.topic:'';$('note').value=e?e.note:'';
+  renderHabitChecks(new Set(e?state.settings.habits.filter(function(h){return e.habits[h]===true}):[]));
+  formMeta(date);
+}
+function persistSettings(){
+  saveLocal();renderHabitChecks();renderHabitEditor();render();
+  Store.saveSettings().catch(function(){});
+}
+$('logForm').addEventListener('submit',async function(ev){
+  ev.preventDefault();
+  var date=$('date').value||TODAY;
+  if(date>TODAY){msg('Pick today or an earlier date.',true);return}
+  var chosen=document.querySelector('input[name=mood]:checked'),mood=chosen?Number(chosen.value):0;
+  if(!mood){msg('Pick a mood from 1 to 5.',true);return}
+  var hours=parseFloat($('hours').value);if(!(hours>=0))hours=0;hours=Math.min(16,Math.round(hours*4)/4);
+  var habits={};Array.prototype.forEach.call(document.querySelectorAll('#habitList input'),function(i){habits[i.getAttribute('data-name')]=i.checked});
+  var entry={date:date,mood:mood,hours:hours,topic:$('topic').value.trim().slice(0,80),note:$('note').value.trim().slice(0,280),habits:habits};
+  var btn=$('saveBtn');btn.disabled=true;
+  state.entries[date]=entry;state.lastUpdated=new Date();state.justSaved=true;
+  saveLocal();render();formMeta(date);
+  try{await Store.saveEntry(entry);msg('Saved. The tips are updated.')}
+  catch(e){msg('Saved on this device. Syncing to your account failed.',true)}
+  btn.disabled=false;
+});
+$('delBtn').addEventListener('click',async function(){
+  if(!delArmed){delArmed=true;$('delBtn').textContent='Tap again to delete';delTimer=setTimeout(resetDel,3500);return}
+  var date=$('date').value;resetDel();
+  delete state.entries[date];state.lastUpdated=new Date();state.justSaved=true;
+  saveLocal();render();loadForm(date);
+  try{await Store.del(date);msg('Entry deleted.')}catch(e){msg('Deleted on this device. Syncing failed.',true)}
+});
+$('date').max=TODAY;
+$('date').addEventListener('change',function(){var d=$('date').value;if(d&&d<=TODAY){loadForm(d);msg('')}});
+function bump(dlt){var v=parseFloat($('hours').value)||0;$('hours').value=String(Math.max(0,Math.min(16,Math.round((v+dlt)*4)/4)))}
+$('hMinus').addEventListener('click',function(){bump(-0.25)});
+$('hPlus').addEventListener('click',function(){bump(0.25)});
+$('editHabits').addEventListener('click',function(){
+  var ed=$('habitEditor'),open=ed.hidden;ed.hidden=!open;this.setAttribute('aria-expanded',String(open));
+  this.textContent=open?'Hide habits and goal':'Edit habits and goal';
+  if(open)renderHabitEditor();
+});
+$('goal').addEventListener('change',function(){
+  var g=parseFloat($('goal').value);
+  if(!(g>=0.25&&g<=12)){$('goal').value=state.settings.goal;return}
+  state.settings.goal=Math.round(g*4)/4;persistSettings();
+});
+function addHabit(){
+  var inp=$('newHabit'),name=inp.value.trim().slice(0,40);
+  if(!name)return;
+  if(state.settings.habits.length>=8||state.settings.habits.indexOf(name)>=0){inp.select();return}
+  state.settings.habits.push(name);inp.value='';persistSettings();
+}
+$('addHabit').addEventListener('click',addHabit);
+$('newHabit').addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();addHabit()}});
+$('habitEdit').addEventListener('click',function(ev){
+  var b=ev.target.closest('[data-rm]');if(!b||state.settings.habits.length<=1)return;
+  state.settings.habits.splice(Number(b.getAttribute('data-rm')),1);persistSettings();
+});
+$('history').addEventListener('click',function(ev){
+  var b=ev.target.closest('[data-edit]');
+  if(b){loadForm(b.getAttribute('data-edit'));msg('');$('logCard').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});return}
+  if(ev.target.id==='toggleAll'){state.showAll=!state.showAll;renderHistory(view())}
+});
+$('toForm').addEventListener('click',function(){
+  $('logCard').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  var m=document.getElementById('m3');if(m)m.focus({preventScroll:true});
+});
+function setRange(n){
+  state.range=n;
+  $('r14').setAttribute('aria-pressed',String(n===14));$('r30').setAttribute('aria-pressed',String(n===30));
+  var v=view();renderCharts(v);renderHeat(v);
+}
+$('r14').addEventListener('click',function(){setRange(14)});
+$('r30').addEventListener('click',function(){setRange(30)});
+$('tips').addEventListener('click',function(ev){if(ev.target.id==='tipsMore'){state.tipsAll=!state.tipsAll;renderTips(view())}});
+
+/* ---------- backup: one JSON file with entries, settings and quiz days ---------- */
+$('backupBtn').addEventListener('click',function(){
+  var data={app:'life-log',v:1,saved:new Date().toISOString(),settings:state.settings,
+    entries:Object.keys(state.entries).sort().map(function(k){return serEntry(state.entries[k])}),
+    quiz:Object.keys(state.quiz.days).sort().map(function(k){return serQDay(state.quiz.days[k])})};
+  var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}));
+  var a=document.createElement('a');a.href=url;a.download='life-log-backup-'+TODAY+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},4000);
+});
+$('restoreBtn').addEventListener('click',function(){$('restoreFile').click()});
+$('restoreFile').addEventListener('change',function(){
+  var f=this.files&&this.files[0];this.value='';if(!f)return;
+  f.text().then(function(t){
+    var o=JSON.parse(t);
+    if(!o||o.app!=='life-log'||!Array.isArray(o.entries))throw new Error('format');
+    var n=0;
+    o.entries.forEach(function(d){var e=parseEntry(d);if(e){state.entries[e.date]=e;n++}});
+    var s=parseSettings(o.settings);if(s)state.settings=s;
+    (Array.isArray(o.quiz)?o.quiz:[]).forEach(function(d){var q=parseQDay(d);if(q&&!state.quiz.days[q.date])state.quiz.days[q.date]=q});
+    saveLocal();saveQuizLocal();renderHabitChecks();renderHabitEditor();loadForm($('date').value||TODAY);render();renderQuiz();
+    msg('Restored '+n+(n===1?' entry.':' entries.'));
+  }).catch(function(){msg('That file is not a Life Log backup.',true)});
+});
+
+/* ---------- daily quiz ---------- */
+var CATS={history:'History',news:'News now',business:'Business',stocks:'Stocks',geology:'Geology',social:'Social',politics:'Politics',fun:'Fun facts'};
+var CORE=['history','business','geology','social','fun'];
+var EVERGREEN=CORE.concat(['politics','stocks']);
+var LIVE_CATS=['news','politics','stocks'];
+
+/* Current-events briefing. Claude refreshes the copy stored in the database (quiz/briefing); this one is the fallback. */
+/*BRIEF_START*/var BRIEF={"asOf":"2026-10-18","items":[
+{"id":"n1","c":"news","q":"Which country won the 2026 FIFA World Cup?","o":["Spain","Argentina","France","Brazil"],"w":"Spain beat defending champion Argentina 1-0 after extra time in the final on 19 July 2026 at MetLife Stadium in New Jersey. It was Spain's second World Cup title and its first since 2010.","s":"ABC News (Good Morning America)"},
+{"id":"n2","c":"news","q":"Who scored the only goal of the 2026 World Cup final?","o":["Ferran Torres","Lamine Yamal","Julián Álvarez","Mikel Oyarzabal"],"w":"Torres scored in the 105th minute of extra time. Spain conceded only one goal in the whole tournament.","s":"ABC News (Good Morning America)"},
+{"id":"n3","c":"news","q":"How many national teams played in the 2026 World Cup, the first hosted by three countries?","o":["48","32","40","64"],"w":"The United States, Mexico and Canada co-hosted the tournament, which grew from 32 teams to 48.","s":"ABC News (Good Morning America)"},
+{"id":"n4","c":"news","q":"Francis Halzen won the 2026 Nobel Prize in Physics for work on the IceCube observatory. What does IceCube detect?","o":["High-energy neutrinos from space","Gravitational waves","Dark-matter particles","Solar flares"],"w":"IceCube instruments a cubic kilometre of Antarctic ice at the South Pole to catch rare neutrinos from distant cosmic sources.","s":"NobelPrize.org and news reports, 6 Oct 2026"},
+{"id":"n5","c":"news","q":"Who won the 2026 Nobel Peace Prize?","o":["Navanethem Pillay","Narges Mohammadi","Maria Ressa","Yulia Navalnaya"],"w":"Pillay is a South African jurist and a former UN High Commissioner for Human Rights. She was honored for promoting peace and international law.","s":"News reports of the October 2026 announcement"},
+{"id":"p1","c":"politics","q":"Who became UK prime minister in July 2026 after Keir Starmer resigned?","o":["Andy Burnham","Wes Streeting","Angela Rayner","Ed Miliband"],"w":"Burnham, who previously served as Mayor of Greater Manchester, took office around 19 July 2026.","s":"NPR, 19 Jul 2026; gov.uk, 20 Jul 2026"},
+{"id":"p2","c":"politics","q":"Who is Germany's chancellor as of October 2026?","o":["Friedrich Merz","Olaf Scholz","Robert Habeck","Armin Laschet"],"w":"Merz, of the CDU, has led Germany since May 2025. On 20 July 2026 he spoke with the new UK prime minister about the Kensington Treaty and Ukraine.","s":"gov.uk readout of the UK prime minister's call with Chancellor Merz, 20 Jul 2026"},
+{"id":"p3","c":"politics","q":"On what date are the 2026 US midterm elections?","o":["3 November 2026","10 November 2026","27 October 2026","7 November 2026"],"w":"Election Day falls on the Tuesday after the first Monday in November. All 435 House seats and about a third of the Senate are on the ballot.","s":"US federal election calendar"},
+{"id":"s1","c":"stocks","q":"Who chairs the US Federal Reserve as of October 2026?","o":["Kevin Warsh","Jerome Powell","Christopher Waller","Janet Yellen"],"w":"Kevin Warsh was sworn in as chair in 2026. The Fed's rate-setting committee next meets on 27 and 28 October.","s":"Seeking Alpha, Fox Business and Yahoo Finance"},
+{"id":"s2","c":"stocks","q":"What did the Federal Reserve do with interest rates on 16 September 2026?","o":["Raised the target range by a quarter point, to 3.75%-4%","Held rates steady","Cut the target range by a quarter point","Raised rates by half a point"],"w":"The vote was 12 to 0, and it was the Fed's first rate hike in three years. The statement said inflation remains elevated.","s":"Federal Reserve statement, 16 Sep 2026; Yahoo Finance"},
+{"id":"s3","c":"stocks","q":"About where did the S&P 500 close on Friday, 16 October 2026?","o":["About 7,660","About 5,900","About 9,100","About 6,300"],"w":"It fell 1.1% to 7,659.44, and both the S&P 500 and the Nasdaq had their worst week since June. The index was still up about 11.9% for the year.","s":"Associated Press market summary, 16 Oct 2026"},
+{"id":"s4","c":"stocks","q":"Which company had the largest market value among large US-listed companies in mid-October 2026?","o":["Nvidia","Apple","Alphabet","Microsoft"],"w":"Nvidia was first at about $5.0 trillion, ahead of Apple at $4.9 trillion and Alphabet at $3.9 trillion. Rankings at the top can swap within days.","s":"americancompanies.com, data as of 17 Oct 2026"}
+]};/*BRIEF_END*/
+
+/* Built-in evergreen questions. The first option is the correct one; order is shuffled when a quiz is built. Only append to keep ids stable. */
+var BANK=[
+{"c":"history","q":"Which empire built the Royal Road, a highway of roughly 2,500 km that linked Sardis to Susa?","o":["The Persian (Achaemenid) Empire","The Roman Empire","The Mongol Empire","The Ottoman Empire"],"w":"Under Darius I, relay riders could carry messages along the Royal Road far faster than a traveler on foot. Herodotus praised the royal couriers who rode it."},
+{"c":"history","q":"In which year did the Berlin Wall fall?","o":["1989","1961","1991","1985"],"w":"The wall opened on 9 November 1989. It had stood since August 1961, and Germany reunified in October 1990."},
+{"c":"history","q":"The Rosetta Stone helped scholars decipher which ancient writing system?","o":["Egyptian hieroglyphs","Linear B","Mayan glyphs","Sumerian cuneiform"],"w":"The stone repeats one decree in hieroglyphs, Demotic and Greek. Jean-François Champollion announced the breakthrough in 1822."},
+{"c":"history","q":"Which 1919 treaty formally ended World War I between Germany and the Allied powers?","o":["The Treaty of Versailles","The Treaty of Westphalia","The Treaty of Tordesillas","The Congress of Vienna"],"w":"It was signed on 28 June 1919 in the Hall of Mirrors, five years to the day after the assassination of Archduke Franz Ferdinand."},
+{"c":"history","q":"Which Chinese dynasty sent the envoy Zhang Qian west, helping open the Silk Road?","o":["Han","Tang","Ming","Qin"],"w":"Zhang Qian traveled west for Emperor Wu of Han around 138 BCE, and his reports about Central Asia led to regular trade routes."},
+{"c":"history","q":"Who was the first woman to win a Nobel Prize?","o":["Marie Curie","Dorothy Hodgkin","Lise Meitner","Irène Joliot-Curie"],"w":"Marie Curie shared the 1903 Nobel Prize in Physics with Pierre Curie and Henri Becquerel. She won a second Nobel, in Chemistry, in 1911."},
+{"c":"history","q":"Which civilization built Machu Picchu in the 15th century?","o":["The Inca","The Aztec","The Maya","The Olmec"],"w":"The Inca built it high in the Andes, probably as an estate for the emperor Pachacuti. It sits about 2,400 m above sea level."},
+{"c":"history","q":"In which year did King John seal the Magna Carta?","o":["1215","1066","1415","1588"],"w":"It was sealed at Runnymede in June 1215 and limited the king's power by law. Parts of it still shape legal ideas today."},
+{"c":"history","q":"Which of the Seven Wonders of the Ancient World was a lighthouse?","o":["The Pharos of Alexandria","The Colossus of Rhodes","The Hanging Gardens of Babylon","The Mausoleum at Halicarnassus"],"w":"The Pharos stood on an island off Alexandria, Egypt, and was among the tallest man-made structures of its time. Earthquakes brought it down by the 14th century."},
+{"c":"business","q":"If you invest $1,000 at 7% a year with interest compounding, about how long does it take to double (using the Rule of 72)?","o":["About 10 years","About 5 years","About 15 years","About 20 years"],"w":"Divide 72 by the interest rate: 72 ÷ 7 is about 10.3 years. The rule is a quick mental shortcut for doubling time."},
+{"c":"business","q":"A product sells for $200 and costs $120 to make. What is the gross margin?","o":["40%","60%","80%","33%"],"w":"Gross margin is (revenue − cost of goods sold) ÷ revenue, so (200 − 120) ÷ 200 = 40%."},
+{"c":"business","q":"Amazon began in 1994 as an online seller of what?","o":["Books","Electronics","Groceries","Music"],"w":"Jeff Bezos started the company in a garage in Bellevue, Washington. He chose books because there were far more titles than any physical store could stock."},
+{"c":"business","q":"What does a balance sheet show?","o":["What a company owns and owes at a single point in time","Its cash coming in and out over a year","Its sales growth by region","Its share price history"],"w":"Assets equal liabilities plus shareholders' equity. The income statement shows performance over a period, and the cash flow statement tracks cash movements."},
+{"c":"business","q":"A market with only one seller of a product is called a what?","o":["Monopoly","Oligopoly","Monopsony","Duopoly"],"w":"A monopoly has one seller. A monopsony is the reverse, with one buyer. An oligopoly has a few sellers."},
+{"c":"business","q":"What does GDP measure?","o":["The total value of goods and services a country produces in a period","A country's total government debt","The average income of its citizens","The value of its exports minus imports"],"w":"GDP is usually reported quarterly and annually. Dividing it by population gives GDP per capita."},
+{"c":"business","q":"What does the business term SaaS stand for?","o":["Software as a Service","Systems and Applications Strategy","Secure Access and Storage","Sales as a Subscription"],"w":"SaaS products, such as email or project tools, are rented through a subscription and run in the cloud instead of being installed."},
+{"c":"stocks","q":"What does a stock's price-to-earnings (P/E) ratio compare?","o":["Share price to earnings per share","Revenue to costs","Debt to assets","Dividends to share price"],"w":"A P/E of 20 means investors pay $20 for each $1 of yearly earnings. A high P/E often signals expected growth."},
+{"c":"stocks","q":"A bear market is commonly defined as a drop of at least what percentage from a recent high?","o":["20%","5%","10%","35%"],"w":"A fall of 10% is called a correction. Bear markets, at 20% or more, are rarer."},
+{"c":"stocks","q":"A company has 2 million shares trading at $50 each. What is its market capitalization?","o":["$100 million","$50 million","$2 million","$1 billion"],"w":"Market cap equals share price times shares outstanding: $50 × 2,000,000 = $100,000,000."},
+{"c":"stocks","q":"Which index tracks 30 large US companies and weights them by share price?","o":["Dow Jones Industrial Average","S&P 500","Nasdaq Composite","Russell 2000"],"w":"The Dow is price-weighted, so a stock with a higher share price moves the index more. The S&P 500 is weighted by market value."},
+{"c":"stocks","q":"What is a dividend?","o":["A share of company profits paid to shareholders","A fee charged by a broker","A loan from a bank to a company","A tax on stock gains"],"w":"Many mature companies pay dividends quarterly. Fast-growing companies often keep profits to reinvest."},
+{"c":"stocks","q":"What is the main idea behind an index fund?","o":["Hold all the stocks in an index to match its return at low cost","Pick a few stocks expected to beat the market","Borrow money to buy more shares","Trade frequently to catch short-term moves"],"w":"Index funds charge low fees because no one is picking stocks. Over long periods, many active managers trail their benchmark."},
+{"c":"geology","q":"Rock that forms when magma or lava cools and hardens is called what?","o":["Igneous","Sedimentary","Metamorphic","Fossiliferous"],"w":"Granite cools slowly underground, while basalt cools quickly at the surface. Sedimentary rock forms from compacted layers, and metamorphic rock is changed by heat and pressure."},
+{"c":"geology","q":"What is the boundary between Earth's crust and mantle called?","o":["The Mohorovičić discontinuity (Moho)","The Gutenberg discontinuity","The Lehmann discontinuity","The Conrad discontinuity"],"w":"Croatian seismologist Andrija Mohorovičić found it in 1909 when he noticed seismic waves speeding up at a certain depth."},
+{"c":"geology","q":"On the Mohs scale, which mineral has the top hardness of 10?","o":["Diamond","Quartz","Corundum","Topaz"],"w":"Quartz is 7, topaz 8 and corundum, which includes ruby and sapphire, 9. Diamond is the hardest of the ten reference minerals."},
+{"c":"geology","q":"The Ring of Fire, home to most of the world's earthquakes and volcanoes, rings which ocean?","o":["The Pacific Ocean","The Atlantic Ocean","The Indian Ocean","The Arctic Ocean"],"w":"About 90% of earthquakes and roughly three-quarters of active volcanoes occur along this 40,000 km horseshoe of plate boundaries."},
+{"c":"geology","q":"Which scale do seismologists mainly use today to report earthquake size?","o":["The moment magnitude scale","The Richter scale","The Mercalli scale","The Beaufort scale"],"w":"Moment magnitude replaced Richter's scale for large quakes because it measures the energy released more reliably. The Mercalli scale describes shaking intensity, not size."},
+{"c":"geology","q":"About how old is Earth?","o":["4.5 billion years","1.5 billion years","6 billion years","10 billion years"],"w":"Radiometric dating of meteorites and the oldest rocks puts Earth's age near 4.54 billion years."},
+{"c":"geology","q":"Which layer of Earth is liquid?","o":["The outer core","The inner core","The lower mantle","The crust"],"w":"Flowing molten iron in the outer core generates Earth's magnetic field. The inner core is solid because of immense pressure."},
+{"c":"geology","q":"Limestone is made mostly of which mineral?","o":["Calcite (calcium carbonate)","Quartz (silicon dioxide)","Halite (sodium chloride)","Feldspar"],"w":"Much limestone is built from the shells and skeletons of marine organisms. It dissolves in weak acid, which is how many caves form."},
+{"c":"geology","q":"Which supercontinent existed about 300 to 200 million years ago?","o":["Pangaea","Gondwana","Laurasia","Rodinia"],"w":"Pangaea began breaking apart roughly 200 million years ago. Gondwana and Laurasia were its southern and northern halves."},
+{"c":"social","q":"Who coined the word sociology?","o":["Auguste Comte","Émile Durkheim","Max Weber","Karl Marx"],"w":"Comte introduced the term in the 1830s and wanted a science of society. Durkheim and Weber later built it into an academic discipline."},
+{"c":"social","q":"Dunbar's number suggests people can maintain roughly how many stable social relationships?","o":["About 150","About 15","About 500","About 1,500"],"w":"Anthropologist Robin Dunbar linked group size to brain size. The number is a rough average, not a hard limit."},
+{"c":"social","q":"What is confirmation bias?","o":["Favoring information that supports what you already believe","Trusting the first answer you hear","Following the choice of the majority","Overestimating how much others agree with you"],"w":"It shapes how people search for, read and remember evidence. Seeking out views that challenge you is one way to counter it."},
+{"c":"social","q":"Which country was the first to give women the right to vote in national elections, in 1893?","o":["New Zealand","The United Kingdom","The United States","Finland"],"w":"New Zealand's women gained the vote in 1893, though they could not stand for parliament until 1919."},
+{"c":"social","q":"What does the Gini coefficient measure?","o":["Income inequality in a population","Life expectancy","Literacy rates","Trade balance"],"w":"A Gini of 0 means everyone has equal income, and 1 means one person has all of it. Most countries fall between about 0.25 and 0.6."},
+{"c":"social","q":"In politics and sociology, what is the Overton window?","o":["The range of ideas the public will accept as mainstream","A timeline of election dates","The period when voters are most active","A measure of media reach"],"w":"The idea is named after policy analyst Joseph Overton. Ideas outside the window seem too radical until public opinion shifts."},
+{"c":"social","q":"Which name did the first American-born pope take when he was elected in 2025?","o":["Leo XIV","Francis II","Benedict XVII","John Paul III"],"w":"Robert Prevost was elected in May 2025 and chose Leo XIV. His predecessor Francis, from Argentina, was the first pope from the Americas."},
+{"c":"politics","q":"How many permanent members does the UN Security Council have?","o":["Five","Seven","Ten","Fifteen"],"w":"China, France, Russia, the United Kingdom and the United States each hold a veto. Ten other members serve two-year terms."},
+{"c":"politics","q":"How many justices sit on the US Supreme Court?","o":["Nine","Seven","Eleven","Thirteen"],"w":"Congress set the number at nine in 1869. The Constitution does not fix it."},
+{"c":"politics","q":"How many electoral votes does a candidate need to win the US presidency?","o":["270","218","300","435"],"w":"There are 538 electoral votes in total, so 270 is a majority. 218 is the majority of the House."},
+{"c":"politics","q":"What is a filibuster in the US Senate?","o":["Extended debate used to delay or block a vote","A vote to remove a senator","A bill that funds the government","A rule that limits speeches to one minute"],"w":"Ending most filibusters takes a cloture vote of 60 senators, which is why many bills need more than a simple majority."},
+{"c":"politics","q":"What is gerrymandering?","o":["Drawing electoral district lines to favor a party or group","Paying voters to turn out","Counting ballots by hand","Moving an election date"],"w":"The term comes from Massachusetts governor Elbridge Gerry, whose 1812 map included a district shaped like a salamander."},
+{"c":"politics","q":"Which document opens with the words We the People?","o":["The US Constitution","The Declaration of Independence","The Magna Carta","The Federalist Papers"],"w":"The Preamble lists the aims of the new government, such as forming a more perfect union and securing the blessings of liberty."},
+{"c":"politics","q":"In a parliamentary system, who is the head of government?","o":["A prime minister or chancellor who needs the legislature's support","A directly elected president","The chief justice","A monarch with full power"],"w":"The UK, Germany and Japan are parliamentary systems. If the head of government loses the legislature's confidence, the government can fall."},
+{"c":"fun","q":"Which marsupial has fingerprints almost indistinguishable from a human's?","o":["The koala","The kangaroo","The wombat","The opossum"],"w":"Koalas evolved fingerprints independently of primates, probably to help them grip eucalyptus branches."},
+{"c":"fun","q":"How many hearts does an octopus have?","o":["Three","One","Two","Eight"],"w":"Two pump blood through the gills and one pumps it to the rest of the body. The blood is blue because it carries copper-based hemocyanin."},
+{"c":"fun","q":"Which planet has a day (one rotation) longer than its year?","o":["Venus","Mercury","Mars","Neptune"],"w":"Venus takes about 243 Earth days to rotate once and 225 days to orbit the Sun. It also spins backward compared with most planets."},
+{"c":"fun","q":"What is a group of flamingos called?","o":["A flamboyance","A flock of flames","A colony of pink","A parade"],"w":"A flamboyance can number in the thousands. Flamingos are pink because of pigments in the algae and shrimp they eat."},
+{"c":"fun","q":"Botanically, a banana is classified as what?","o":["A berry","A nut","A drupe","A root"],"w":"A true berry develops from a single flower's ovary and has seeds inside. Strawberries are not botanical berries, but bananas are."},
+{"c":"fun","q":"Which letter does not appear in the name of any US state?","o":["Q","X","Z","J"],"w":"Q is the only letter missing from every state name. X appears in Texas and New Mexico, Z in Arizona and J in New Jersey."},
+{"c":"fun","q":"Which is the only mammal capable of true, sustained flight?","o":["Bats","Flying squirrels","Sugar gliders","Flying lemurs"],"w":"Gliders only glide downward. Bats flap wings built from elongated finger bones covered by skin."},
+{"c":"fun","q":"Which country is the smallest in the world by area?","o":["Vatican City","Monaco","San Marino","Nauru"],"w":"Vatican City covers roughly half a square kilometre, smaller than most city parks."},
+{"c":"fun","q":"Which animal produces cube-shaped droppings?","o":["The wombat","The koala","The armadillo","The capybara"],"w":"Wombat intestines have uneven elasticity that shapes the droppings into cubes, which they stack to mark territory."}
+];
+BANK.forEach(function(x,i){x.id='b'+i});
+var briefing=BRIEF;
+/* Outside Claude (the installed app) there is no database or question writer: the briefing comes from quiz/briefing.json and the quiz uses the built-in bank. */
+var HAS_CLAUDE=!!(window.claude&&window.claude.use);
+function loadBriefingFile(){
+  fetch('quiz/briefing.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).then(function(o){if(o)applyBriefing(o)}).catch(function(){});
+}
+var quizUI={busy:false,ctl:null,idx:null};
+var qChain=Promise.resolve();
+var QKEY='daybook-quiz-v1';
+
+function hashStr(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function shuffle(arr,r){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function norm(s){return String(s||'').toLowerCase().replace(/[^a-z]/g,'')}
+
+function serQDay(d){return {date:d.date,done:!!d.done,note:d.note||'',a:d.ans.slice(),q:d.qs.map(function(q){return {id:q.id,c:q.c,q:q.q,o:q.o,a:q.a,w:q.w,s:q.s||'',d:q.d||'',l:q.live?1:0}})}}
+function parseQDay(o){
+  if(!o||typeof o.date!=='string'||!Array.isArray(o.q)||!Array.isArray(o.a))return null;
+  var qs=o.q.map(function(x){
+    if(!x||typeof x.q!=='string'||!Array.isArray(x.o)||x.o.length<2||!(x.a>=0&&x.a<x.o.length))return null;
+    return {id:String(x.id||''),c:CATS[x.c]?x.c:'fun',q:x.q,o:x.o.map(String),a:Number(x.a),w:String(x.w||''),s:String(x.s||''),d:String(x.d||''),live:!!x.l};
+  }).filter(Boolean);
+  if(!qs.length||qs.length!==o.q.length)return null;
+  var ans=qs.map(function(_,i){var v=Number(o.a[i]);return v>=0&&v<qs[i].o.length?v:-1});
+  return {date:o.date,qs:qs,ans:ans,done:!!o.done,note:String(o.note||'')};
+}
+function saveQuizLocal(){
+  try{
+    var ks=Object.keys(state.quiz.days).sort().slice(-120);
+    localStorage.setItem(QKEY,JSON.stringify(ks.map(function(k){return serQDay(state.quiz.days[k])})));
+  }catch(e){}
+}
+function loadQuizLocal(){
+  try{
+    var raw=localStorage.getItem(QKEY);if(!raw)return;
+    JSON.parse(raw).forEach(function(o){var d=parseQDay(o);if(d)state.quiz.days[d.date]=d});
+  }catch(e){}
+}
+function progressOf(d){return d.ans.filter(function(a){return a>=0}).length+(d.done?1:0)}
+function queueSave(day){
+  qChain=qChain.then(function(){return Store.saveQDay(state.quiz.days[day.date]||day)}).catch(function(){});
+}
+function mergeQuizCloud(qd,isFirst){
+  var days=state.quiz.days;
+  Object.keys(qd).forEach(function(k){
+    var loc=days[k];
+    if(loc&&progressOf(loc)>progressOf(qd[k])){queueSave(loc);return}
+    days[k]=qd[k];
+  });
+  if(isFirst){Object.keys(days).forEach(function(k){if(!qd[k])queueSave(days[k])})}
+  saveQuizLocal();renderQuiz();
+}
+function applyBriefing(o){
+  if(!o||!Array.isArray(o.items))return;
+  var items=o.items.filter(function(x){return x&&typeof x.id==='string'&&typeof x.q==='string'&&LIVE_CATS.indexOf(x.c)>=0&&Array.isArray(x.o)&&x.o.length>=3&&typeof x.w==='string'});
+  if(items.length<3)return;
+  briefing={asOf:/^\d{4}-\d{2}-\d{2}$/.test(String(o.asOf))?String(o.asOf):BRIEF.asOf,items:items};
+  renderQuiz();
+}
+
+function curDay(){return state.quiz.days[TODAY]}
+function firstOpen(day){for(var i=0;i<day.qs.length;i++){if(day.ans[i]<0)return i}return day.qs.length}
+function dayScore(day){var s=0;day.qs.forEach(function(q,i){if(day.ans[i]===q.a)s++});return s}
+function quizStats(){
+  var per={},days=state.quiz.days,played=0,total=0,ok=0;
+  Object.keys(CATS).forEach(function(c){per[c]={n:0,ok:0}});
+  Object.keys(days).forEach(function(k){
+    var d=days[k];if(!d.done)return;
+    played++;
+    d.qs.forEach(function(q,i){if(d.ans[i]<0||!per[q.c])return;per[q.c].n++;total++;if(d.ans[i]===q.a){per[q.c].ok++;ok++}});
+  });
+  var k=days[TODAY]&&days[TODAY].done?TODAY:addDays(TODAY,-1),streak=0;
+  while(days[k]&&days[k].done){streak++;k=addDays(k,-1)}
+  return {per:per,played:played,acc:total?Math.round(ok/total*100):null,streak:streak};
+}
+
+function buildPlan(r){
+  var extra=shuffle(EVERGREEN,r).slice(0,2);
+  var slots=LIVE_CATS.map(function(c){return {c:c,live:true}})
+    .concat(CORE.map(function(c){return {c:c,live:false}}))
+    .concat(extra.map(function(c){return {c:c,live:false}}));
+  return shuffle(slots,r);
+}
+function seenIds(){var s={};Object.keys(state.quiz.days).forEach(function(k){state.quiz.days[k].qs.forEach(function(q){s[q.id]=1})});return s}
+function recentStems(){
+  var a=[];Object.keys(state.quiz.days).sort().slice(-4).forEach(function(k){state.quiz.days[k].qs.forEach(function(q){a.push(q.q)})});
+  return a;
+}
+function toQ(src,r){
+  var opts=shuffle(src.o.map(function(t,i){return {t:String(t),ok:i===0}}),r),a=0;
+  opts.forEach(function(x,i){if(x.ok)a=i});
+  return {id:src.id,c:src.c,q:src.q,o:opts.map(function(x){return x.t}),a:a,w:src.w||'',s:src.s||'',d:src.d||'',live:!!src.live};
+}
+function pickOne(pool,used,seen,r){
+  var open=pool.filter(function(x){return !used[x.id]});
+  var fresh=open.filter(function(x){return !seen[x.id]});
+  var from=fresh.length?fresh:(open.length?open:pool);
+  var x=from[Math.floor(r()*from.length)];used[x.id]=1;return x;
+}
+function bankSet(plan,r){
+  var seen=seenIds(),used={};
+  return plan.map(function(s){
+    var pool,isLive=false;
+    if(s.live){pool=briefing.items.filter(function(x){return x.c===s.c});isLive=pool.length>0}
+    if(!isLive)pool=BANK.filter(function(x){return x.c===s.c});
+    var it=pickOne(pool,used,seen,r);
+    return toQ({id:it.id,c:s.c,q:it.q,o:it.o,w:it.w,s:it.s,d:isLive?briefing.asOf:'',live:isLive},r);
+  });
+}
+async function genEvergreen(slots,ctl){
+  var sample=null;
+  try{sample=await (window.claude&&window.claude.use?window.claude.use('sample'):null)}catch(e){}
+  if(!sample||!sample.json)throw {code:'unavailable'};
+  var recent=recentStems().slice(-30);
+  var list=slots.map(function(s,i){return (i+1)+'. '+CATS[s.c]}).join('\n');
+  var prompt='Write '+slots.length+' multiple-choice trivia questions for a daily general-knowledge quiz. Today is '+TODAY+'.\n\n'+
+    'Write exactly one question for each line below, using the category named on that line:\n'+list+'\n\n'+
+    'Rules:\n'+
+    '- Use lasting facts you are certain are true. Do not ask about current events, who currently holds an office, prices, rankings or anything that changes. For Stocks, ask how markets, investing or company finance work. For Politics, ask how governments, elections and institutions work, or about political history. For Social, ask about sociology, psychology, culture or social history.\n'+
+    '- Medium difficulty for a curious adult. One clearly correct answer and three believable wrong answers. No trick questions and no all-of-the-above options.\n'+
+    '- Keep each question under 30 words and each option under 12 words.\n'+
+    '- "why" is one or two sentences that explain the answer and add an interesting detail.\n'+
+    (recent.length?'- Do not repeat or closely rephrase any of these recent questions: '+recent.join(' | ')+'\n':'')+
+    '\nReply with only a JSON array of '+slots.length+' objects shaped like {"cat":"History","q":"...","options":["...","...","...","..."],"answer":0,"why":"..."}. "cat" is the category name from the list and "answer" is the 0-based index of the correct option.';
+  var res=await sample.json(prompt,{signal:ctl.signal,cache:false});
+  var arr=Array.isArray(res)?res:(res&&Array.isArray(res.questions)?res.questions:[]);
+  var taken={};
+  return slots.map(function(s,i){
+    for(var k=0;k<arr.length;k++){
+      var it=arr[k];
+      if(taken[k]||!it||norm(it.cat)!==norm(CATS[s.c]))continue;
+      var ok=typeof it.q==='string'&&it.q.trim()&&Array.isArray(it.options)&&it.options.length===4&&Number.isInteger(it.answer)&&it.answer>=0&&it.answer<4&&typeof it.why==='string';
+      if(!ok)continue;
+      var opts=it.options.map(function(x){return String(x).trim()});
+      if(opts.some(function(x){return !x})||new Set(opts).size!==4)continue;
+      taken[k]=1;
+      return {id:'g'+TODAY+'-'+i,c:s.c,q:it.q.trim(),o:[opts[it.answer]].concat(opts.filter(function(_,j){return j!==it.answer})),w:it.why.trim(),s:'',d:'',live:false};
+    }
+    return null;
+  });
+}
+async function startToday(){
+  if(quizUI.busy||curDay())return;
+  var r=rng(hashStr('daybook-quiz-'+TODAY)),rs=rng(hashStr('daybook-shuffle-'+TODAY));
+  var plan=buildPlan(r),qs=bankSet(plan,r);
+  var note=HAS_CLAUDE?'Built-in question set. Claude was not available to write new ones.':'',swapped=0,want=0;
+  if(HAS_CLAUDE)try{
+    quizUI.busy=true;quizUI.ctl=new AbortController();renderQuiz();
+    var idxs=[];plan.forEach(function(s,i){if(!s.live)idxs.push(i)});
+    want=idxs.length;
+    var gen=await genEvergreen(idxs.map(function(i){return plan[i]}),quizUI.ctl);
+    gen.forEach(function(g,k){if(g){qs[idxs[k]]=toQ(g,rs);swapped++}});
+    if(swapped>0)note='Written by Claude on '+fmtShort(TODAY)+'.'+(swapped<want?' Some questions come from the built-in set.':'');
+  }catch(e){
+    if(e&&e.code==='cancelled')note='Built-in question set.';
+  }
+  var day={date:TODAY,qs:qs,ans:qs.map(function(){return -1}),done:false,note:note};
+  state.quiz.days[TODAY]=day;
+  quizUI.busy=false;quizUI.ctl=null;quizUI.idx=0;
+  saveQuizLocal();queueSave(day);renderQuiz(true);
+}
+function answer(i){
+  var day=curDay();if(!day||day.done||quizUI.busy)return;
+  var idx=quizUI.idx;
+  if(idx==null||day.ans[idx]>=0||!(i>=0&&i<day.qs[idx].o.length))return;
+  day.ans[idx]=i;saveQuizLocal();queueSave(day);renderQuiz(true);
+}
+function nextQ(){
+  var day=curDay();if(!day||day.done||quizUI.idx==null||day.ans[quizUI.idx]<0)return;
+  if(quizUI.idx>=day.qs.length-1){day.done=true;quizUI.idx=null;saveQuizLocal();queueSave(day);renderWeek(view())}
+  else quizUI.idx++;
+  renderQuiz(true);
+}
+
+function qHead(){return '<div class="q-top"><h2 id="quizTitle">Daily quiz</h2><span class="q-date">'+esc(fmtLong(TODAY))+'</span></div>'}
+function qstat(v,l){return '<div class="qstat"><b>'+v+'</b><span>'+l+'</span></div>'}
+function viewBusy(){
+  return qHead()+'<div class="busy" role="status"><span class="spin" aria-hidden="true"></span><span>Claude is writing today\'s questions. This can take up to a minute.</span></div>'+
+    '<div class="q-actions"><button type="button" class="btn ghost" data-act="skipgen">Use the built-in set instead</button></div>';
+}
+function viewIntro(st){
+  var prevKey=Object.keys(state.quiz.days).filter(function(k){return k<TODAY&&state.quiz.days[k].done}).sort().pop();
+  var prev=prevKey?dayScore(state.quiz.days[prevKey]):null;
+  var age=Math.round((parse(TODAY)-parse(briefing.asOf))/86400000);
+  var chips=Object.keys(CATS).map(function(c){return '<span class="chip">'+CATS[c]+'</span>'}).join('');
+  return qHead()+
+    '<p class="hint" style="margin-bottom:0">Ten questions, about four minutes, with a new set every day.</p>'+
+    '<div class="chips" role="list" aria-label="Topics">'+chips+'</div>'+
+    '<div class="qstats">'+qstat(st.streak,'Day streak')+qstat(st.played,'Days played')+qstat(st.acc==null?'&ndash;':st.acc+'%','Accuracy')+'</div>'+
+    '<div class="q-actions"><button type="button" class="btn" data-act="start">Start today\'s 10</button></div>'+
+    '<p class="q-note">Each set has one current question on news, politics and stocks, taken from a briefing dated '+esc(fmtShort(briefing.asOf))+'. The other seven '+(HAS_CLAUDE?'are written by Claude when you press Start.':'come from a built-in bank of about 50 questions.')+'</p>'+
+    (age>7?'<p class="q-note warn">That briefing is '+age+' days old, so some current answers may have changed.'+(HAS_CLAUDE?' Ask Claude to refresh it.':'')+'</p>':'')+
+    (prev!=null?'<p class="q-note">Last quiz: '+prev+' of 10.</p>':'');
+}
+function viewQuestion(day){
+  var i=quizUI.idx,q=day.qs[i],a=day.ans[i],shown=a>=0,n=day.qs.length,letters='ABCD';
+  var prog='<div class="prog" aria-hidden="true">'+day.qs.map(function(x,k){
+    var c='';if(day.ans[k]>=0)c=day.ans[k]===x.a?'ok':'bad';else if(k===i)c='cur';
+    return '<i class="'+c+'"></i>';
+  }).join('')+'</div>';
+  var opts=q.o.map(function(t,k){
+    var cls='qopt',tag='';
+    if(shown){
+      if(k===q.a){cls+=' ok';tag='<span class="tag">Correct</span>'}
+      else if(k===a){cls+=' bad';tag='<span class="tag">Your answer</span>'}
+      else cls+=' dim';
+    }
+    return '<button type="button" class="'+cls+'" data-act="pick" data-i="'+k+'"'+(shown?' aria-disabled="true" tabindex="-1"':'')+'><span class="k">'+letters.charAt(k)+'</span><span class="tx">'+esc(t)+'</span>'+tag+'</button>';
+  }).join('');
+  var fb='';
+  if(shown){
+    var ok=a===q.a;
+    fb='<div class="fb" role="status"><span class="pill '+(ok?'good':'watch')+'">'+(ok?ICON.good+'Correct':ICON.watch+'Not quite')+'</span>'+
+      '<p>'+(ok?'':'The answer is <strong>'+esc(q.o[q.a])+'</strong>. ')+esc(q.w)+'</p>'+
+      (q.live?'<p class="src">Current as of '+esc(fmtShort(q.d||briefing.asOf))+'. Source: '+esc(q.s||'news reports')+'</p>':'')+'</div>';
+  }
+  var last=i>=n-1;
+  var act='<div class="q-actions">'+(shown?'<button type="button" class="btn" data-act="next" data-focus>'+(last?'See results':'Next question')+'</button>':'<span class="q-note" style="margin:0">Tap an answer, or press 1 to 4.</span>')+'</div>';
+  return qHead()+prog+
+    '<div class="q-row"><span class="q-count">Question '+(i+1)+' of '+n+'</span><span class="cat-pill">'+esc(CATS[q.c])+(q.live?' &middot; current':'')+'</span></div>'+
+    '<h3 class="qtext" tabindex="-1"'+(shown?'':' data-focus')+'>'+esc(q.q)+'</h3>'+
+    '<div class="opts" role="group" aria-label="Answers">'+opts+'</div>'+fb+act;
+}
+function viewResults(day,st){
+  var sc=dayScore(day),n=day.qs.length;
+  var msg=sc>=9?'Excellent day.':sc>=7?'Strong day.':sc>=5?'Solid. Open Review answers for the misses.':'Good practice. Review answers shows what to learn.';
+  var rows=day.qs.map(function(q,i){
+    var ok=day.ans[i]===q.a;
+    return '<li><details><summary><span class="mk '+(ok?'ok':'bad')+'" aria-label="'+(ok?'Correct':'Missed')+'">'+(ok?'&#10003;':'&#10007;')+'</span><span class="rc">'+esc(CATS[q.c])+'</span><span class="rq">'+esc(q.q)+'</span></summary>'+
+      '<div class="rd"><p><strong>Answer:</strong> '+esc(q.o[q.a])+'</p>'+(ok?'':'<p><strong>You chose:</strong> '+esc(q.o[day.ans[i]]||'no answer')+'</p>')+'<p>'+esc(q.w)+'</p>'+
+      (q.live?'<p>Current as of '+esc(fmtShort(q.d||briefing.asOf))+'. Source: '+esc(q.s||'news reports')+'</p>':'')+'</div></details></li>';
+  }).join('');
+  var cats=Object.keys(CATS).filter(function(c){return st.per[c].n>0}),weakest=null;
+  cats.forEach(function(c){var p=st.per[c];if(p.n>=3){var v=p.ok/p.n;if(!weakest||v<weakest.v)weakest={c:c,v:v}}});
+  var bars=cats.map(function(c){
+    var p=st.per[c],pc=Math.round(p.ok/p.n*100);
+    return '<div class="acc-row"><span>'+CATS[c]+'</span><div class="acc-track" role="img" aria-label="'+CATS[c]+', '+pc+' percent correct"><div class="acc-fill" style="width:'+pc+'%"></div></div><span class="acc-n">'+p.ok+'/'+p.n+' &middot; '+pc+'%</span></div>';
+  }).join('');
+  var strip=day.qs.map(function(q,i){var ok=day.ans[i]===q.a;return '<span class="dot2 '+(ok?'ok':'bad')+'" title="'+esc(CATS[q.c])+'" aria-label="'+esc(CATS[q.c])+(ok?', correct':', missed')+'">'+(ok?'&#10003;':'&#10007;')+'</span>'}).join('');
+  return qHead()+
+    '<div class="score" tabindex="-1" data-focus><b>'+sc+'/'+n+'</b><span>'+msg+'</span></div>'+
+    '<div class="strip">'+strip+'<span class="strip-note">'+st.streak+(st.streak===1?' day':' days')+' streak</span></div>'+
+    '<details class="fold"><summary>Review answers</summary><ul class="rev">'+rows+'</ul></details>'+
+    (bars?'<details class="fold"><summary>Accuracy by topic'+(weakest?' <span class="fold-hint">weakest: '+CATS[weakest.c]+'</span>':'')+'</summary><div class="acc">'+bars+'</div></details>':'')+
+    '<p class="q-note">New set tomorrow.'+(day.note?' '+esc(day.note):'')+'</p>';
+}
+function renderQuiz(moveFocus){
+  var el=$('quiz');if(!el)return;
+  var day=curDay(),st=quizStats(),h;
+  if(quizUI.busy)h=viewBusy();
+  else if(!day)h=viewIntro(st);
+  else if(!day.done){
+    if(quizUI.idx==null||quizUI.idx>=day.qs.length)quizUI.idx=Math.min(firstOpen(day),day.qs.length-1);
+    h=viewQuestion(day);
+  }else h=viewResults(day,st);
+  el.innerHTML=h;
+  if(moveFocus){var f=el.querySelector('[data-focus]');if(f)f.focus()}
+}
+$('quiz').addEventListener('click',function(ev){
+  var b=ev.target.closest('[data-act]');if(!b)return;
+  var a=b.getAttribute('data-act');
+  if(a==='start')startToday();
+  else if(a==='skipgen'){if(quizUI.ctl)quizUI.ctl.abort()}
+  else if(a==='pick')answer(Number(b.getAttribute('data-i')));
+  else if(a==='next')nextQ();
+});
+document.addEventListener('keydown',function(ev){
+  if(ev.ctrlKey||ev.metaKey||ev.altKey||ev.key.length!==1)return;
+  var qc=$('quizCard');if(!qc||!qc.contains(document.activeElement))return;
+  var day=curDay();if(!day||day.done||quizUI.busy)return;
+  var k=ev.key.toLowerCase(),i='1234'.indexOf(k);
+  if(i<0)i='abcd'.indexOf(k);
+  if(i<0)return;
+  ev.preventDefault();answer(i);
+});
+
+/* ---------- boot ---------- */
+$('todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+var hadLocal=loadLocal();
+loadQuizLocal();
+renderHabitChecks(new Set());renderHabitEditor();loadForm(TODAY);render();renderQuiz();
+var lastW=0,raf=0;
+if(window.ResizeObserver){
+  new ResizeObserver(function(){
+    var w=$('moodChart').clientWidth;
+    if(w===lastW)return;lastW=w;
+    cancelAnimationFrame(raf);raf=requestAnimationFrame(function(){renderCharts()});
+  }).observe(document.querySelector('.main'));
+}
+if(HAS_CLAUDE)initCloud(hadLocal);else loadBriefingFile();
+if(!HAS_CLAUDE&&'serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)return;
+  var nt=key(new Date());if(nt===TODAY)return;
+  if(!HAS_CLAUDE)loadBriefingFile();
+  TODAY=nt;SAMPLE=makeSample();quizUI.idx=null;
+  $('date').max=TODAY;
+  $('todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  loadForm(TODAY);render();renderQuiz();
+});
+})();
+</script>
+
+</body></html>
