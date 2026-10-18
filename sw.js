@@ -1,5 +1,5 @@
 // App shell: cache-first, bumped by VERSION. Quiz briefing: network-first, cached copy when offline.
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `shell-${VERSION}`;
 const DATA = "quiz";
 const FONTS = "fonts";
